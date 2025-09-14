@@ -6,63 +6,11 @@
 [[ -f "$HOME/.config/bashship.conf" ]] &&
 source "$HOME/.config/bashship.conf" 2> /dev/null
 
+[[ ! -f "$HOME/.config/bashship.conf" ]] &&
+source /usr/share/bashship/bashship.conf 2> /dev/null
+
 _name="bashship"
 _version="$(cat /usr/share/doc/bashship/version 2>/dev/null || echo 'unknown version')"
-
-# Default configuration values
-_promptOrder=${PROMPT_ORDER:-( "user" "host" "path" "time" )}
-_newline=${NEWLINE:-true}
-_nextline=${NEXTLINE:-true}
-
-# Prompt symbols
-_promptSymbol=${SYMBOL:-"$"}
-_promptSymbolRoot=${SYMBOL_ROOT:-"$SYMBOL"}
-_symbolColor=${SYMBOL_COLOR:-2}
-_symbolColorError=${SYMBOL_COLOR_ERROR:-1}
-
-# Directory styling and colors
-_dirColor=${DIR_COLOR:-"13"}
-_dirTruncate=${DIR_TRUNCATE:-3}
-_dirTruncateSymbol=${DIR_TRUNCATE_SYMBOL:-"…/"}
-_dirHomeSymbol=${DIR_HOME_SYMBOL:-"~"}
-_dirReadonlyColor=${DIR_READONLY_COLOR:-1}
-_dirReadonlySymbol=${DIR_READONLY_SYMBOL:-" ! "}
-
-# Git branch
-_gitEnable=${GIT_ENABLE:-"false"}
-_gitBranchColor=${GIT_BRANCH_COLOR:-"4"}
-_gitBranchSymbol=${GIT_BRANCH_SYMBOL:-""}
-_gitBranchOpen=${GIT_BRANCH_OPEN:-"["}
-_gitBranchClose=${GIT_BRANCH_CLOSE:-"]"}
-_gitBranchClose=${GIT_BRANCH_CLOSE:-"]"}
-
-# Git status symbols
-_gitStatusEnable=${GIT_STATUS_ENABLE:-"false"}
-_gitBranchSymbol=${GIT_BRANCH_SYMBOL:-""}
-_gitConflict=${GIT_CONFLICT:-"✖"}
-_gitUntracked=${GIT_UNTRACKED:-"?"}
-_gitStaged=${GIT_STAGED:-"+"}
-_gitModified=${GIT_MODIFIED:-"~"}
-_gitDeleted=${GIT_DELETED:-"-"}
-_ahead=${AHEAD:-"↑"}
-_gitClean=${GIT_CLEAN:-""}
-
-# Host styling and colors
-_hostColor=${HOST_COLOR:-"13"}
-_hostSshStyle=${HOST_SSH_STYLE:-""}
-_hostSshOnly=${HOST_SSH_ONLY:-"false"}
-_hostEnable=${HOST_ENABLE:-"false"}
-
-# Time styling and colors
-_timeEnable=${TIME_ENABLE:-"false"}
-_timeColor=${TIME_COLOR:-"8"}
-_time12h=${TIME_12H:-"false"}
-
-# User styling and colors
-_userColor=${USER_COLOR:-"14"}
-_userRootColor=${USER_ROOT_COLOR:-"1"}
-_userColorBg=${USER_COLOR_BG:-""}
-_userRootColorBg=${USER_ROOT_COLOR_BG:-""}
 
 _reset="\[$(tput sgr0)\]"
 _bold="\[$(tput bold)\]"
@@ -83,9 +31,9 @@ function __user () {
     local user="\u"
 
     [[ "$EUID" -eq "0" ]] &&
-    echo -ne "${_bold}$(__c "$_userRootColor")$(__bg "$_userRootColorBg")${user}${_reset}"
+    echo -ne "${_bold}$(__c "$USER_ROOT_COLOR")$(__bg "$USER_ROOT_COLOR_BG")${user}${_reset}"
     [[ "$EUID" -gt "0" ]] &&
-     echo -ne "${_bold}$(__c "$_userColor")$(__bg "$_userColorBg")${user}${_reset}"
+    echo -ne "${_bold}$(__c "$USER_COLOR")$(__bg "$USER_COLOR_BG")${user}${_reset}"
 
 }
 
@@ -94,12 +42,12 @@ function __host () {
     local _host=" ~"
 
     # Show hostname only if SSH, prefixed with "ssh:"
-    [[ "$_hostSshOnly" == "true" ]] && [[ -n "$SSH_CLIENT" || -n "$SSH_TTY" || -n "$SSH_CONNECTION" ]] &&
-    _host="$(__c "$_hostColor")$_hostSshStyle\h${_reset} ~"
+    [[ "$HOST_SSH_ONLY" == "true" ]] && [[ -n "$SSH_CLIENT" || -n "$SSH_TTY" || -n "$SSH_CONNECTION" ]] &&
+    _host="$(__c "$HOST_COLOR")$HOST_SSH_STYLE\h${_reset} ~"
 
-    [[ "$_hostEnable" == "true" ]] && _host="$(__c "$_hostColor")@\h${_reset} ~"
+    [[ "$HOST_ENABLE" == "true" ]] && _host="$(__c "$HOST_COLOR")@\h${_reset} ~"
 
-    echo -ne "$_host"
+    echo -ne "${_bold}$_host${_reset}"
 
 }
 
@@ -114,18 +62,18 @@ function __dir () {
     read -ra parts <<< "$dir"
 
     # Apply truncation
-    if (( ${#parts[@]} > _dirTruncate )); then
-        parts=("${parts[@]: -$_dirTruncate}")
-        dir="${_dirTruncateSymbol}${parts[*]// /\/}"
+    if (( ${#parts[@]} > DIR_TRUNCATE )); then
+        parts=("${parts[@]: -$DIR_TRUNCATE}")
+        dir="${DIR_TRUNCATE_SYMBOL}${parts[*]// /\/}"
     fi
 
     # Color based on write permissions
-    [[ ! -w "$PWD" ]] && dir="$(__c "$_dirReadonlyColor")${dir}${_reset}"
-    [[ -w "$PWD" ]] && dir="$(__c "$_dirColor")${dir}${_reset}"
+    [[ ! -w "$PWD" ]] && dir="$(__c "$DIR_READONLY_COLOR")${dir}${_reset}"
+    [[ -w "$PWD" ]] && dir="$(__c "$DIR_COLOR")${dir}${_reset}"
 
     # Read-only indicator
     [[ ! -w "$PWD" ]] &&
-    dir+="$dir $(__c "$_dirReadonlyColor")${_dirReadonlySymbol}${_reset}"
+    dir+="$dir $(__c "$DIR_READONLY_COLOR")${DIR_READONLY_SYMBOL}${_reset}"
 
     echo -ne " $dir"
 }
@@ -137,13 +85,13 @@ function __git-branch () {
     # shellcheck disable=SC2155
     local branch="$(git symbolic-ref --short HEAD 2>/dev/null)"
 
-    [[ -z "$_gitBranchSymbol" ]] && gitSymbol=""
-    [[ -n "$_gitBranchSymbol" ]] && gitSymbol="$_gitBranchSymbol"
+    [[ -z "$GIT_BRANCH_SYMBOL" ]] && gitSymbol=""
+    [[ -n "$GIT_BRANCH_SYMBOL" ]] && gitSymbol="$GIT_BRANCH_SYMBOL"
 
-    [[ "$_gitEnable" == "false" ]] && return
+    [[ "$GIT_ENABLE" == "false" ]] && return
 
     if [[ -n "$branch" ]]; then
-        echo -ne " $(__c "$_gitBranchColor")${_gitBranchOpen}${_reset} $branch$gitSymbol"
+        echo -ne " $(__c "$GIT_BRANCH_COLOR")${GIT_BRANCH_OPEN}${_reset} $branch$gitSymbol"
     else
         echo -ne ""
     fi
@@ -162,14 +110,14 @@ function __git-status () {
     _status=$(git status --porcelain 2>/dev/null)
 
     # Append symbols if conditions are met
-    echo "$_status" | grep -q '^UU' && symbols+=" $(__c 9)$_gitConflict$_reset"
-    echo "$_status" | grep -q '^??' && symbols+=" $(__c 14)$_gitUntracked$_reset"
-    echo "$_status" | grep -q '^M\ ' && symbols+=" $(__c 11)$_gitStaged$_reset"
-    echo "$_status" | grep -q '^\ M' && symbols+=" $(__c 2)$_gitModified$_reset"
-    echo "$_status" | grep -q '^\ D' && symbols+=" $(__c 1)$_gitDeleted$_reset"
+    echo "$_status" | grep -q '^UU' && symbols+=" $(__c 9)$GIT_CONFLICT$_reset"
+    echo "$_status" | grep -q '^??' && symbols+=" $(__c 14)$GIT_UNTRACKED$_reset"
+    echo "$_status" | grep -q '^M\ ' && symbols+=" $(__c 11)$GIT_STAGED$_reset"
+    echo "$_status" | grep -q '^\ M' && symbols+=" $(__c 2)$GIT_MODIFIED$_reset"
+    echo "$_status" | grep -q '^\ D' && symbols+=" $(__c 1)$GIT_DELETED$_reset"
 
     # Clean working directory
-    [[ -z "$_status" ]] && symbols+="$_gitClean"
+    [[ -z "$_status" ]] && symbols+="$GIT_CLEAN"
 
     # Ahead of remote
     # shellcheck disable=SC1083
@@ -180,7 +128,7 @@ function __git-status () {
     [[ $ahead -gt 0 ]] && symbols+=" $(__c 5)$AHEAD$_reset"
 
     # Output
-    echo -ne " $symbols $(__c "$_gitBranchColor")${_gitBranchClose}${_reset}"
+    echo -ne " $symbols $(__c "$GIT_BRANCH_COLOR")${GIT_BRANCH_CLOSE}${_reset}"
 
 }
 
@@ -189,18 +137,26 @@ function __time () {
 
     local _timeFormat="+%H:%M"   # default 24h
 
-    [[ "$_timeEnable" == "false" ]] && return
-    [[ "$_time12h" == "true" ]] && _timeFormat="+%I:%M %p"
+    [[ "$TIME_ENABLE" == "false" ]] && return
+    [[ "$TIME_12H" == "true" ]] && _timeFormat="+%I:%M %p"
 
-    echo -ne " $(__c "$_timeColor")$(date "$_timeFormat")${_reset}"
+    echo -ne " $(__c "$TIME_COLOR")$(date "$_timeFormat")${_reset}"
+}
+
+# Background jobs
+function __jobs () {
+
+    # shellcheck disable=SC2155
+    local count=$(jobs -p | wc -l)
+    [[ $count -gt 0 ]] && echo -ne " ⚙️$count"
 }
 
 # Modular prompt builder
 function bash_prompt() {
 
     [[ "$?" -gt "0" ]] &&
-    symbol="$(__c "$_symbolColorError")$_promptSymbol${_reset}" ||
-    symbol="$(__c "$_symbolColor")$_promptSymbol${_reset}"
+    symbol="$(__c "$SYMBOL_COLOR_ERROR")$SYMBOL${_reset}" ||
+    symbol="$(__c "$SYMBOL_COLOR")$SYMBOL${_reset}"
 
     local ps=""
 
@@ -211,10 +167,13 @@ function bash_prompt() {
             git-branch          ) ps+="$(__git-branch)" ;;
             git-status          ) ps+="$(__git-status)" ;;
             time                ) ps+="$(__time)"       ;;
+            jobs                ) ps+="$(__jobs)"       ;;
     esac done
 
-    [[ "$_nextline" == "true" ]] && ps+="\n"
-    [[ "$_newline" == "true" ]] && ps="\n$ps"
+    [[ "$NEXTLINE" == "true" ]] && ps+="\n${symbol}"
+    [[ "$NEXTLINE" == "false" ]] && ps+=" ${symbol}"
 
-    PS1="$ps ${symbol} "
+    [[ "$NEWLINE" == "true" ]] && ps="\n$ps"
+
+    PS1="$ps "
 }

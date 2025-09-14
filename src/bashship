@@ -1,0 +1,218 @@
+#!/usr/bin/env bash
+
+# bashship - A modular bash prompt system inspired by Starship and Powerlevel10k
+
+# Load user config if exists
+[[ -f "$HOME/.config/bashship.conf" ]] &&
+source "$HOME/.config/bashship.conf" 2> /dev/null
+
+_name="bashship"
+_version="$(cat /usr/share/doc/bashship/version 2>/dev/null || echo 'unknown version')"
+
+# Default configuration values
+_promptOrder=${PROMPT_ORDER:-( "user" "host" "path" "time" )}
+_newline=${ADD_NEWLINE:-true}
+_nextline=${NEXTLINE_PROMPT:-true}
+
+# Prompt symbols
+_promptSymbol=${SYMBOL:-"$"}
+_promptSymbolRoot=${SYMBOL_ROOT:-"$SYMBOL"}
+_symbolColor=${SYMBOL_COLOR:-2}
+_symbolColorError=${SYMBOL_COLOR_ERROR:-1}
+
+# Directory styling and colors
+_dirColor=${DIR_COLOR:-"13"}
+_dirTruncate=${DIR_TRUNCATE:-3}
+_dirTruncateSymbol=${DIR_TRUNCATE_SYMBOL:-"…/"}
+_dirHomeSymbol=${DIR_HOME_SYMBOL:-"~"}
+_dirReadonlyColor=${DIR_READONLY_COLOR:-1}
+_dirReadonlySymbol=${DIR_READONLY_SYMBOL:-" ! "}
+
+# Git branch
+_gitEnable=${GIT_ENABLE:-"false"}
+_gitBranchColor=${GIT_BRANCH_COLOR:-"4"}
+_gitBranchSymbol=${GIT_BRANCH_SYMBOL:-""}
+_gitBranchOpen=${GIT_BRANCH_OPEN:-"["}
+_gitBranchClose=${GIT_BRANCH_CLOSE:-"]"}
+_gitBranchClose=${GIT_BRANCH_CLOSE:-"]"}
+
+# Git status symbols
+_gitStatusEnable=${GIT_STATUS_ENABLE:-"false"}
+_gitBranchSymbol=${GIT_BRANCH_SYMBOL:-""}
+_gitConflict=${GIT_CONFLICT:-"✖"}
+_gitUntracked=${GIT_UNTRACKED:-"?"}
+_gitStaged=${GIT_STAGED:-"+"}
+_gitModified=${GIT_MODIFIED:-"~"}
+_gitDeleted=${GIT_DELETED:-"-"}
+_ahead=${AHEAD:-"↑"}
+_gitClean=${GIT_CLEAN:-""}
+
+# Host styling and colors
+_hostColor=${HOST_COLOR:-"13"}
+_hostSshStyle=${HOST_SSH_STYLE:-""}
+_hostSshOnly=${HOST_SSH_ONLY:-"false"}
+
+# Time styling and colors
+_timeEnable=${TIME_ENABLE:-"false"}
+_timeColor=${TIME_COLOR:-"8"}
+_time12h=${TIME_12H:-"false"}
+_timeFormat=${TIME_FORMAT:-"%H:%M:%S"}
+
+# User styling and colors
+_userColor=${USER_COLOR:-"14"}
+_userRootColor=${USER_ROOT_COLOR:-"1"}
+_userColorBg=${USER_COLOR_BG:-""}
+_userRootColorBg=${USER_ROOT_COLOR_BG:-""}
+
+_reset="\[$(tput sgr0)\]"
+_bold="\[$(tput bold)\]"
+
+# Helpers
+function __c () { [[ -z "$1" ]] && set -- 7; echo "\[$(tput setaf "$1")\]"; }
+
+function __bg () { [[ -z "$1" ]] && set -- 0; echo "\[$(tput setab "$1")\]"; }
+
+function __cache_get () { echo -n "${__PROMPT_CACHE[$1]}"; }
+
+function __cache_set () { __PROMPT_CACHE[$1]="$2"; }
+
+# User + Host block
+
+function __prompt_user () {
+
+    local user="\u"
+
+    [[ "$EUID" -eq "0" ]] &&
+    echo -ne "${_bold}$(__c "$_userRootColor")$(__bg "$_userRootColorBg")${user}${_reset} ~ "
+    [[ "$EUID" -gt "0" ]] &&
+     echo -ne "${_bold}$(__c "$_userColor")$(__bg "$_userColorBg")${user}${_reset} ~ "
+
+}
+
+function __prompt_host () {
+
+    local host=""
+
+    # Show hostname only if SSH, prefixed with "ssh:"
+    if [[ "$_hostSshOnly" == "true" ]]; then
+        [[ -n "$SSH_CONNECTION" || -n "$SSH_TTY" || -n "$SSH_CLIENT" ]] &&
+        host="$(__c "$_hostColor")$_hostSshStyle\h)"
+    fi
+
+    [[ -n "$host" ]] && echo -ne "$(__c "$_hostColor")${host}${_reset}"
+    [[ -z "$host" ]] && echo -ne ""
+
+}
+
+# Current working dir
+function __prompt_dir () {
+
+    local dir="$PWD"
+    dir="${dir/#$HOME}"
+
+    # Split path into parts
+    local IFS="/"
+    read -ra parts <<< "$dir"
+
+    # Apply truncation
+    if (( ${#parts[@]} > _dirTruncate )); then
+        parts=("${parts[@]: -$_dirTruncate}")
+        dir="${_dirTruncateSymbol}${parts[*]// /\/}"
+    fi
+
+    # Color based on write permissions
+    [[ ! -w "$PWD" ]] && dir="$(__c "$_dirReadonlyColor")${dir}${_reset}"
+    [[ -w "$PWD" ]] && dir="$(__c "$_dirColor")${dir}${_reset}"
+
+    # Read-only indicator
+    [[ ! -w "$PWD" ]] &&
+    dir+="$dir $(__c "$_dirReadonlyColor")${_dirReadonlySymbol}${_reset}"
+
+    echo -ne " $dir"
+}
+
+function __prompt_git_branch () {
+
+    command -v git >/dev/null 2>&1 || return
+
+    # shellcheck disable=SC2155
+    local branch="$(git symbolic-ref --short HEAD 2>/dev/null)"
+
+    [[ -z "$_gitBranchSymbol" ]] && gitSymbol=""
+    [[ -n "$_gitBranchSymbol" ]] && gitSymbol="$_gitBranchSymbol"
+
+    [[ "$_gitEnable" == "false" ]] && return
+
+    if [[ -n "$branch" ]]; then
+        echo -ne " $(__c "$_gitBranchColor")${_gitBranchOpen}${_reset} $branch$gitSymbol"
+    else
+        echo -ne ""
+    fi
+
+}
+
+# Git status with Starship-style symbols, colored, no brackets, using && logic
+function __prompt_git_status () {
+
+    command -v git >/dev/null 2>&1 || return
+
+    git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return
+
+    local branch symbols="" git_status
+    branch=$(git symbolic-ref --short HEAD 2>/dev/null || git describe --tags --exact-match 2>/dev/null)
+    git_status=$(git status --porcelain 2>/dev/null)
+
+    # Append symbols if conditions are met
+    echo "$git_status" | grep -q '^UU' && symbols+=" $(__c 9)$_gitConflict$_reset"
+    echo "$git_status" | grep -q '^??' && symbols+=" $(__c 14)$_gitUntracked$_reset"
+    echo "$git_status" | grep -q '^M\ ' && symbols+=" $(__c 11)$_gitStaged$_reset"
+    echo "$git_status" | grep -q '^\ M' && symbols+=" $(__c 2)$_gitModified$_reset"
+    echo "$git_status" | grep -q '^\ D' && symbols+=" $(__c 1)$_gitDeleted$_reset"
+
+    # Clean working directory
+    [[ -z "$git_status" ]] && symbols+="$_gitClean"
+
+    # Ahead of remote
+    # shellcheck disable=SC1083
+    ahead=$(git rev-list --count \
+    --left-right @{upstream}...HEAD 2>/dev/null | awk '{print $2}')
+
+    # shellcheck disable=SC2153
+    [[ $ahead -gt 0 ]] && symbols+=" $(__c 5)$AHEAD$_reset"
+
+    # Output
+    echo -ne " $symbols $(__c "$_gitBranchColor")${_gitBranchClose}${_reset}"
+
+}
+
+# Time
+function __prompt_time () {
+
+    [[ "$_timeEnable" == "false" ]] && return
+
+    [[ "$_time12h" == "true" ]] && _timeFormat="%I:%M %p"
+
+    echo -ne " $(__c "$_timeColor")$(date +"$_timeFormat")${_reset}"
+
+}
+
+# Modular prompt builder
+function bash_prompt() {
+
+    [[ "$?" -gt "0" ]] &&
+    symbol="$(__c "$_symbolColorError")$_promptSymbol${_reset}" ||
+    symbol="$(__c "$_symbolColor")$_promptSymbol${_reset}"
+
+    local ps=""
+
+    for mod in "${PROMPT_ORDER[@]}"; do case $mod in
+            user                ) ps+="$(__prompt_user)"       ;;
+            host                ) ps+="$(__prompt_host)"       ;;
+            path                ) ps+="$(__prompt_dir)"        ;;
+            git-branch          ) ps+="$(__prompt_git_branch)" ;;
+            git-status          ) ps+="$(__prompt_git_status)" ;;
+            time                ) ps+="$(__prompt_time)"       ;;
+    esac done
+
+    PS1="\n$ps ${symbol} "
+}

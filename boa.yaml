@@ -1,6 +1,6 @@
 # General configuration for `boa`.
 format: yaml
-application: ddnsd
+application: bashship
 
 # This file is used to configure the behavior of `boa` and should be placed
 # in the root of your project directory.

@@ -1,16 +1,30 @@
-Source: template
-Section: unknown
+Source: bashship
+Section: utils
 Priority: optional
-Maintainer: Michael <michaelleeschaecher@gmail.com>
-Build-Depends: debhelper-compat (= 13), autotools-dev
+Maintainer: MLSTidbits <contact@mlstidbits.com>
+Build-Depends:
+ debhelper-compat (= 13), boa, pandoc, dh-make, git
 Standards-Version: 4.6.0
-Homepage: <insert the upstream URL, if relevant>
+Homepage: https://github.com/MLSTidbits/bashship
 #Vcs-Browser: https://salsa.debian.org/debian/template
 #Vcs-Git: https://salsa.debian.org/debian/template.git
 Rules-Requires-Root: no
 
-Package: template
+Package: bashship
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: <insert up to 60 chars description>
- <insert long description, indented with spaces>
+Depends: bash (>= 4.8), bash-completion
+Suggests: git, curl
+Description: A minimal, fast, and highly customizable bash prompt
+ Bashship is a minimal, fast, and highly customizable bash prompt that provides
+ essential information without overwhelming the user. It is designed to be
+ lightweight and efficient, making it suitable for users who prefer a clean and
+ simple command-line interface.
+ .
+ Key features include:
+  - Minimalistic design: Focuses on essential information without clutter.
+  - Fast performance: Optimized for speed to ensure a smooth user experience.
+  - Highly customizable: Allows users to tailor the prompt to their preferences.
+  - Git integration: Displays relevant Git information when in a repository.
+ .
+ Whether you're a developer, system administrator, or casual user,
+ Bashship enhances your terminal experience with its elegant and functional design.

@@ -4,12 +4,13 @@ Upstream-Contact: <preferred name and address to reach the upstream project>
 Source: <url://example.com>
 
 Files: *
-Copyright: <years> <put author's name and email here>
-           <years> <likewise for another author>
+Copyright: 2025 MLSTidbits <contact@mlstidbits.com>
+           2025 Michael Schaecher <michaelschaecher@mlstidbits.com>
 License: GPL-3.0+
 
 Files: debian/*
-Copyright: 2025 Michael <michaelleeschaecher@gmail.com>
+Copyright: 2025 MLSTidbits <contact@mlstidbits.com>
+           2025 Michael Schaecher <michaelschaecher@mlstidbits.com>
 License: GPL-3.0+
 
 License: GPL-3.0+

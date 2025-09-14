@@ -11,8 +11,8 @@ _version="$(cat /usr/share/doc/bashship/version 2>/dev/null || echo 'unknown ver
 
 # Default configuration values
 _promptOrder=${PROMPT_ORDER:-( "user" "host" "path" "time" )}
-_newline=${ADD_NEWLINE:-true}
-_nextline=${NEXTLINE_PROMPT:-true}
+_newline=${NEWLINE:-true}
+_nextline=${NEXTLINE:-true}
 
 # Prompt symbols
 _promptSymbol=${SYMBOL:-"$"}
@@ -57,7 +57,6 @@ _hostEnable=${HOST_ENABLE:-"false"}
 _timeEnable=${TIME_ENABLE:-"false"}
 _timeColor=${TIME_COLOR:-"8"}
 _time12h=${TIME_12H:-"false"}
-_timeFormat=${TIME_FORMAT:-"%H:%M:%S"}
 
 # User styling and colors
 _userColor=${USER_COLOR:-"14"}
@@ -188,12 +187,12 @@ function __git-status () {
 # Time
 function __time () {
 
+    local _timeFormat="+%H:%M"   # default 24h
+
     [[ "$_timeEnable" == "false" ]] && return
+    [[ "$_time12h" == "true" ]] && _timeFormat="+%I:%M %p"
 
-    [[ "$_time12h" == "true" ]] && _timeFormat="%I:%M %p"
-
-    echo -ne " $(__c "$_timeColor")$(date +"$_timeFormat")${_reset}"
-
+    echo -ne " $(__c "$_timeColor")$(date "$_timeFormat")${_reset}"
 }
 
 # Modular prompt builder
@@ -214,5 +213,8 @@ function bash_prompt() {
             time                ) ps+="$(__time)"       ;;
     esac done
 
-    PS1="\n$ps ${symbol} "
+    [[ "$_nextline" == "true" ]] && ps+="\n"
+    [[ "$_newline" == "true" ]] && ps="\n$ps"
+
+    PS1="$ps ${symbol} "
 }

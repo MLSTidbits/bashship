@@ -51,6 +51,7 @@ _gitClean=${GIT_CLEAN:-""}
 _hostColor=${HOST_COLOR:-"13"}
 _hostSshStyle=${HOST_SSH_STYLE:-""}
 _hostSshOnly=${HOST_SSH_ONLY:-"false"}
+_hostEnable=${HOST_ENABLE:-"false"}
 
 # Time styling and colors
 _timeEnable=${TIME_ENABLE:-"false"}
@@ -72,40 +73,39 @@ function __c () { [[ -z "$1" ]] && set -- 7; echo "\[$(tput setaf "$1")\]"; }
 
 function __bg () { [[ -z "$1" ]] && set -- 0; echo "\[$(tput setab "$1")\]"; }
 
-function __cache_get () { echo -n "${__PROMPT_CACHE[$1]}"; }
+function __cache-get () { echo -n "${__CACHE[$1]}"; }
 
-function __cache_set () { __PROMPT_CACHE[$1]="$2"; }
+function __cache-set () { __CACHE[$1]="$2"; }
 
 # User + Host block
 
-function __prompt_user () {
+function __user () {
 
     local user="\u"
 
     [[ "$EUID" -eq "0" ]] &&
-    echo -ne "${_bold}$(__c "$_userRootColor")$(__bg "$_userRootColorBg")${user}${_reset} ~ "
+    echo -ne "${_bold}$(__c "$_userRootColor")$(__bg "$_userRootColorBg")${user}${_reset}"
     [[ "$EUID" -gt "0" ]] &&
-     echo -ne "${_bold}$(__c "$_userColor")$(__bg "$_userColorBg")${user}${_reset} ~ "
+     echo -ne "${_bold}$(__c "$_userColor")$(__bg "$_userColorBg")${user}${_reset}"
 
 }
 
-function __prompt_host () {
+function __host () {
 
-    local host=""
+    local _host=" ~"
 
     # Show hostname only if SSH, prefixed with "ssh:"
-    if [[ "$_hostSshOnly" == "true" ]]; then
-        [[ -n "$SSH_CONNECTION" || -n "$SSH_TTY" || -n "$SSH_CLIENT" ]] &&
-        host="$(__c "$_hostColor")$_hostSshStyle\h)"
-    fi
+    [[ "$_hostSshOnly" == "true" ]] && [[ -n "$SSH_CLIENT" || -n "$SSH_TTY" || -n "$SSH_CONNECTION" ]] &&
+    _host="$(__c "$_hostColor")$_hostSshStyle\h${_reset} ~"
 
-    [[ -n "$host" ]] && echo -ne "$(__c "$_hostColor")${host}${_reset}"
-    [[ -z "$host" ]] && echo -ne ""
+    [[ "$_hostEnable" == "true" ]] && _host="$(__c "$_hostColor")@\h${_reset} ~"
+
+    echo -ne "$_host"
 
 }
 
 # Current working dir
-function __prompt_dir () {
+function __dir () {
 
     local dir="$PWD"
     dir="${dir/#$HOME}"
@@ -131,7 +131,7 @@ function __prompt_dir () {
     echo -ne " $dir"
 }
 
-function __prompt_git_branch () {
+function __git-branch () {
 
     command -v git >/dev/null 2>&1 || return
 
@@ -152,25 +152,25 @@ function __prompt_git_branch () {
 }
 
 # Git status with Starship-style symbols, colored, no brackets, using && logic
-function __prompt_git_status () {
+function __git-status () {
 
     command -v git >/dev/null 2>&1 || return
 
     git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return
 
-    local branch symbols="" git_status
+    local branch symbols="" _status
     branch=$(git symbolic-ref --short HEAD 2>/dev/null || git describe --tags --exact-match 2>/dev/null)
-    git_status=$(git status --porcelain 2>/dev/null)
+    _status=$(git status --porcelain 2>/dev/null)
 
     # Append symbols if conditions are met
-    echo "$git_status" | grep -q '^UU' && symbols+=" $(__c 9)$_gitConflict$_reset"
-    echo "$git_status" | grep -q '^??' && symbols+=" $(__c 14)$_gitUntracked$_reset"
-    echo "$git_status" | grep -q '^M\ ' && symbols+=" $(__c 11)$_gitStaged$_reset"
-    echo "$git_status" | grep -q '^\ M' && symbols+=" $(__c 2)$_gitModified$_reset"
-    echo "$git_status" | grep -q '^\ D' && symbols+=" $(__c 1)$_gitDeleted$_reset"
+    echo "$_status" | grep -q '^UU' && symbols+=" $(__c 9)$_gitConflict$_reset"
+    echo "$_status" | grep -q '^??' && symbols+=" $(__c 14)$_gitUntracked$_reset"
+    echo "$_status" | grep -q '^M\ ' && symbols+=" $(__c 11)$_gitStaged$_reset"
+    echo "$_status" | grep -q '^\ M' && symbols+=" $(__c 2)$_gitModified$_reset"
+    echo "$_status" | grep -q '^\ D' && symbols+=" $(__c 1)$_gitDeleted$_reset"
 
     # Clean working directory
-    [[ -z "$git_status" ]] && symbols+="$_gitClean"
+    [[ -z "$_status" ]] && symbols+="$_gitClean"
 
     # Ahead of remote
     # shellcheck disable=SC1083
@@ -186,7 +186,7 @@ function __prompt_git_status () {
 }
 
 # Time
-function __prompt_time () {
+function __time () {
 
     [[ "$_timeEnable" == "false" ]] && return
 
@@ -206,12 +206,12 @@ function bash_prompt() {
     local ps=""
 
     for mod in "${PROMPT_ORDER[@]}"; do case $mod in
-            user                ) ps+="$(__prompt_user)"       ;;
-            host                ) ps+="$(__prompt_host)"       ;;
-            path                ) ps+="$(__prompt_dir)"        ;;
-            git-branch          ) ps+="$(__prompt_git_branch)" ;;
-            git-status          ) ps+="$(__prompt_git_status)" ;;
-            time                ) ps+="$(__prompt_time)"       ;;
+            user                ) ps+="$(__user)"       ;;
+            host                ) ps+="$(__host)"       ;;
+            path                ) ps+="$(__dir)"        ;;
+            git-branch          ) ps+="$(__git-branch)" ;;
+            git-status          ) ps+="$(__git-status)" ;;
+            time                ) ps+="$(__time)"       ;;
     esac done
 
     PS1="\n$ps ${symbol} "

@@ -41,22 +41,22 @@ function __host () {
 
     local _host=" ~"
 
-    local remote=("$SSH_CLIENT" "$SSH_TTY" "$SSH_CONNECTION")
+    # Detect SSH session
+    if [[ -n "$SSH_CLIENT" || -n "$SSH_TTY" || -n "$SSH_CONNECTION" ]]; then
+        _host="$(__c "$HOST_COLOR")${HOST_SSH_STYLE}\h${RESET} ~"
 
-    for r in "${remote[@]}"; do
-
-        if [[ -n "$r" ]]; then
-            _host="$(__c "$HOST_COLOR")$HOST_SSH_STYLE\h${RESET} ~"
-            [[ "$HOST_SSH_ONLY" == "true" ]] && echo -ne "${BOLD}$_host${RESET}" && return
+        if [[ "$HOST_SSH_ONLY" == "true" ]]; then
+            echo -ne "${BOLD}${_host}${RESET}"
+            return
         fi
+    fi
 
-    done
+    # Local host (only if enabled and not SSH-only)
+    if [[ "$HOST_ENABLE" == "true" && "$HOST_SSH_ONLY" == "false" ]]; then
+        _host="$(__c "$HOST_COLOR")@\h${RESET} ~"
+    fi
 
-    [[ "$HOST_ENABLE" == "true" && "$HOST_SSH_ONLY" == "false" ]] &&
-    _host="$(__c "$HOST_COLOR")@\h${RESET} ~"
-
-    echo -ne "${BOLD}$_host${RESET}"
-
+    echo -ne "${BOLD}${_host}${RESET}"
 }
 
 # Current working dir

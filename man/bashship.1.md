@@ -4,7 +4,8 @@ section: 1
 header: Bashship Configuration File
 footer: Bashship
 date: 2025-09-14
-author: Michael L. Schaecher
+author:
+  - Bashship Contributors
 ---
 
 # NAME
@@ -135,10 +136,10 @@ The user component displays the current username in the prompt. You can customiz
 | `USER_COLOR_BG`        | Background color of the user component               |  |
 | `USER_COLOR_BG_ROOT`   | Background color of the user component when root     |  |
 
-## SEE ALSO
+# SEE ALSO
 
 bash(1), sh(1), dash(1), zsh(1), fish(1)
 
 # COPYRIGHT
 
-Copyright (c) 2025 Michael Schaecher <michaelschaecher@mlstidbits.com> all rights reserved.
+Copyright (c) 2025 MLS Tidbits <contact@mlstidbits.com> all rights reserved.

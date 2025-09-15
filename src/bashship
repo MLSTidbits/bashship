@@ -41,9 +41,11 @@ function __host () {
 
     local _host=" ~"
 
-    # Show hostname only if SSH, prefixed with "ssh:"
-    [[ "$HOST_SSH_ONLY" == "true" ]] && [[ -n "$SSH_CLIENT" || -n "$SSH_TTY" || -n "$SSH_CONNECTION" ]] &&
-    _host="$(__c "$HOST_COLOR")$HOST_SSH_STYLE\h${RESET} ~"
+    # Show hostname only if SSH, prefixed with set prefix
+    if [[ -n "$SSH_CLIENT" || -n "$SSH_TTY" || -n "$SSH_CONNECTION" ]] ; then
+        _host="$(__c "$HOST_COLOR")$HOST_SSH_STYLE\h${RESET} ~"
+        [[ "$HOST_SSH_ONLY" == "true" ]] && echo -ne "${BOLD}$_host${RESET}" && return
+    fi
 
     [[ "$HOST_ENABLE" == "true" ]] && _host="$(__c "$HOST_COLOR")@\h${RESET} ~"
 

@@ -29,98 +29,115 @@ The configuration file is a bash script that sets various variables to customize
 
 Below is an example configuration file with explanations for each option. To learn more about each option, please see `/usr/share/bashship/bashship.conf` or the http://github.com/MLSTidbits/bashship repository.
 
----
+## Configuration Options
 
-## PROMPT_ORDER
+### MODULES ORDER
 
-This array defines the order of modules to be displayed in the prompt. Users can add or remove modules as needed. Available modules include `user`, `host`, `path`, `git-branch`, `git-status`, `time`, and more.
+The order in which the prompt components are displayed can be customized using the `PROMPT_ORDER` variable. The available components are: `user`, `host`, `path`, `git-branch`, `git-status`, `time`, `jobs`, and `container`.
 
-The color values correspond to ANSI color codes. To learn more about ANSI colors, refer to [ANSI escape code - Wikipedia](https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit).
+### PROMPT SYMBOL
 
-```bash
-PROMPT_ORDER=( "user" "host" "path" "time" "jobs" )
-```
+The `PROMPT_SYMBOL` variable defines the symbol used at the end of the prompt. You can customize its appearance using the `SYMBOL_COLOR` and `SYMBOL_COLOR_ERROR` variables.
 
-## NEWLINE and NEXTLINE
+| Variable               | Description                                          | Common Values               |
+|------------------------|------------------------------------------------------|-----------------------------|
+| `PROMPT_SYMBOL`        | The symbol used at the end of the prompt             | `>`, `$`, `#`               |
+| `SYMBOL_COLOR`         | Color of the user component                          | 256 bit ASCII color codes   |
+| `SYMBOL_COLOR_ERROR`   | Color of the user component when last command failed |  |
 
-These options control whether a newline is added before the prompt and whether the prompt symbol appears on a new line.
+### CONTAINER
 
-```bash
-NEWLINE="false"
-NEXTLINE="true"
-```
+Container environments (like Docker) can be indicated in the prompt using the `CONTAINER` component. You can customize its appearance with the following variables:
 
-## SYMBOL and SYMBOL COLORS
+| Variable               | Description                                          | Common Values               |
+|------------------------|------------------------------------------------------|-----------------------------|
+| `CONTAINER_COLOR`      | Color of the container component                     |  |
+| `CONTAINER_SYMBOL`     | Symbol indicating a container environment            | `C:`, or an emoji like `🐳` |
 
-These variables define the prompt symbol and its color. Different symbols and colors can be set for normal users and root users.
+### DIRECTORY
 
-```bash
-SYMBOL="$"
-SYMBOL_ROOT="$SYMBOL"
-SYMBOL_COLOR="15"
-SYMBOL_COLOR_ERROR="1"
-```
+Customize the appearance of the directory path in the prompt using the following variables:
 
-## PATH MODULE CONFIGURATION
+| Variable               | Description                                          | Common Values               |
+|------------------------|------------------------------------------------------|-----------------------------|
+| `DIR_COLOR`            | Color of the directory component                     |  |
+| `DIR_TRUNCATE`         | Number of directory levels to show                   | `1`, `2`, `3`, etc.         |
+| `DIR_TRUNCATE_SYMBOL`  | Symbol used when truncating directories              | `..`, `»`, etc.             |
+| `DIR_HOME_SYMBOL`      | Symbol used to represent the home directory          | `~`, or an emoji like `🏠`  |
+| `DIR_READONLY_COLOR`   | Color of the read-only directory indicator           | 256 bit ASCII color codes   |
 
-These options customize the appearance of the path module, including colors, truncation settings, and symbols for home and read-only directories.
+### GIT
 
-```bash
-DIR_COLOR="4"
-DIR_TRUNCATE="0"
-DIR_TRUNCATE_SYMBOL=" "
-DIR_HOME_SYMBOL="~"
-DIR_READONLY_COLOR="1"
-DIR_READONLY_SYMBOL=" ! "
-```
+In order to enable Git information in the prompt, ensure that `git` is installed and accessible in your system's PATH. The Git components can be customized using the following variables:
 
-## GIT MODULE CONFIGURATION
+| Variable               | Description                                          | Common Values               |
+|------------------------|------------------------------------------------------|-----------------------------|
+| `GIT_COLOR`            | Color of the Git open/close symbols                  | 256 bit ASCII color codes   |
+| `GIT_SYMBOL`           | Emoji used to represent Git                          | `🌿`, `🌳`, `🔀`, etc.      |
+| `GIT_OPEN`             | Symbol used before the Git branch name               | `(`, `[`, `{`, etc.         |
+| `GIT_CLOSE`            | Symbol used after the Git branch name                | `)`, `]`, `}`, etc.         |
 
-These options configure the appearance of the git branch and status modules, including colors and symbols for various git states.
+### GIT STATUS
 
-```bash
-GIT_ENABLE="true"
-GIT_BRANCH_COLOR="13"
-GIT_BRANCH_SYMBOL=""
-GIT_BRANCH_OPEN=" ( "
-GIT_BRANCH_CLOSE=" ) "
-```
+In order to enable Git status information in the prompt, ensure that `git` is installed and accessible in your system's PATH. The Git status components can be customized using the following variables:
 
-## GIT STATUS SYMBOLS
+| Variable               | Description                                          | Common Values               |
+|------------------------|------------------------------------------------------|-----------------------------|
+| `GIT_COLOR`            | Color of the Git open/close symbols                  | 256 bit ASCII color codes   |
+| `GIT_CONFLICT`         | Symbol indicating merge conflicts                    | `!`, `⚠️`, etc.             |
+| `GIT_UNTRACKED`        | Symbol indicating untracked files                    | `?`, `+`, etc.              |
+| `GIT_STAGED`           | Symbol indicating staged changes                     | `*`, `✔️`, etc.             |
+| `GIT_MODIFIED`         | Symbol indicating modified files                     | `+`, `~`, etc.              |
+| `GIT_DELETED`          | Symbol indicating deleted files                      | `-`, `✖️`, etc.             |
+| `GIT_AHEAD`            | Symbol indicating commits ahead of remote            | `^`, `↑`, etc.              |
+| `GIT_BEHIND`           | Symbol indicating commits behind remote              | `v`, `↓`, etc.              |
+| `GIT_CLEAN`            | Symbol indicating a clean working directory          | `✔️`, `✓`, etc.             |
 
-These variables define the symbols used to represent different git statuses, such as added, modified, deleted files, and more.
+### HOSTNAME
 
-```bash
-GIT_STATUS_ENABLE="true"
-GIT_CONFLICT="!"
-GIT_UNTRACKED="?"
-GIT_STAGED="*"
-GIT_MODIFIED="+"
-GIT_DELETED="-"
-GIT_AHEAD="^"
-GIT_CLEAN=""
-```
+The hostname portions of the prompt can be customized such as only showing when connected via SSH, changing the color, and modifying the symbol used before the hostname.
 
-## HOST MODULE CONFIGURATION
+| Variable               | Description                                          | Common Values               |
+|------------------------|------------------------------------------------------|-----------------------------|
+| `HOST_ENABLE`          | Enable or disable user hostname info                 | `true`, `false`             |
+| `HOST_COLOR`           | Color of the hostname component                      | 256 bit ASCII color codes   |
+| `HOST_SYMBOL`          | Symbol used before the hostname                      | `@`, `in`, etc.             |
+| `HOST_SSH`             | Show if connected via SSH                            | `true`, `false`             |
+| `HOST_SSH_STYLE`       | Style of SSH indicator                               | `@ssh:`, `🔒`, etc.         |
+| `JOBS_COLOR`           | Color of the jobs component                          | 256 bit ASCII color codes   |
 
-These options customize the appearance of the host module, including colors and symbols for SSH connections.
+### JOBS
 
-```bash
-HOST_COLOR="2"
-HOST_SSH_STYLE="@ssh:"
-HOST_SSH="true"
-HOST_ENABLE="true"
-```
+The jobs component displays the number of background jobs running in the current shell session. You can customize its appearance using the following variables:
 
-## USER MODULE CONFIGURATION
+| Variable               | Description                                          | Common Values               |
+|------------------------|------------------------------------------------------|-----------------------------|
+| `JOBS_SYMBOL`          | Symbol used before the jobs count                    | `⚙`, `⚒`, `J:`              |
+| `JOBS_COLOR`           | Color of the jobs component                          | 256 bit ASCII color codes   |
 
-These options configure the appearance of the user module, including colors and symbols for root users.
+### TIME
 
-```bash
-USER_COLOR="2"
-USER_ROOT_COLOR="13"
-USER_COLOR_BG="0"
-USER_ROOT_COLOR_BG="15"
+The time component displays the current time in the prompt. You can customize its appearance using the following variables:
+
+| Variable               | Description                                          | Common Values               |
+|------------------------|------------------------------------------------------|-----------------------------|
+| `TIME_COLOR`           | Color of the time component                          | 256 bit ASCII color codes   |
+| `TIME_12H`             | Use 12-hour format for time                          | `true`, `false`             |
+
+### USER
+
+The user component displays the current username in the prompt. You can customize its appearance using the following variables:
+
+| Variable               | Description                                          | Common Values               |
+|------------------------|------------------------------------------------------|-----------------------------|
+| `USER_COLOR`           | Color of the user component                          | 256 bit ASCII color codes   |
+| `USER_COLOR_ROOT`      | Color of the user component when root                |  |
+| `USER_COLOR_BG`        | Background color of the user component               |  |
+| `USER_COLOR_BG_ROOT`   | Background color of the user component when root     |  |
+
+## SEE ALSO
+
+bash(1), sh(1), dash(1), zsh(1), fish(1)
 
 # COPYRIGHT
 

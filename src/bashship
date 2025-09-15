@@ -146,7 +146,7 @@ function __git-status () {
     --left-right @{upstream}...HEAD 2>/dev/null | awk '{print $1}')
 
     # shellcheck disable=SC2153
-    [[ $ahead -gt 0 ]] && symbols+=" $(__c 5)$AHEAD$RESET"
+    [[ $ahead -gt 0 ]] && symbols+=" $(__c 5)$GIT_AHEAD$RESET"
     [[ $behind -gt 0 ]] && symbols+=" $(__c 1)$GIT_BEHIND$RESET"
 
     # Output

@@ -28,35 +28,43 @@ function __cache-set () { __CACHE[$1]="$2"; }
 
 function __user () {
 
-    local user="\u"
+    local color="${USER_COLOR:-2}"
+    local colorBG="${USER_COLOR_BG:-}"
+    local rootColor="${USER_ROOT_COLOR:-1}"
+    local rootColorBG="${USER_ROOT_COLOR_BG:-}"
 
-    [[ "$EUID" -eq "0" ]] &&
-    echo -ne "${BOLD}$(__c "$USER_ROOT_COLOR")$(__bg "$USER_ROOT_COLOR_BG")${user}${RESET}"
-    [[ "$EUID" -gt "0" ]] &&
-    echo -ne "${BOLD}$(__c "$USER_COLOR")$(__bg "$USER_COLOR_BG")${user}${RESET}"
+    local user
+
+    [[ "$EUID" -eq "0" ]] && user="${BOLD}$(__c "$rootColor")$(__bg "$rootColorBG")\u"
+    [[ "$EUID" -gt "0" ]] && user="${BOLD}$(__c "$color")$(__bg "$colorBG")\u"
+
+    echo -ne "${BOLD}${user}${RESET}"
 
 }
 
 function __host () {
 
-    local _host=" ~"
+    local color="${HOST_COLOR:-2}"
+    local colorBG="${HOST_COLOR_BG:-}"
+    local style="${HOST_STYLE:-@}"
+    local styleSSH="${HOST_SSH_STYLE:-@ssh:}"
+    local sshOnly="${HOST_SSH_ONLY:-false}"
+
+    local host
 
     # Detect SSH session
-    if [[ -n "$SSH_CLIENT" || -n "$SSH_TTY" || -n "$SSH_CONNECTION" ]]; then
-        _host="$(__c "$HOST_COLOR")${HOST_SSH_STYLE}\h${RESET} ~"
-
-        if [[ "$HOST_SSH_ONLY" == "true" ]]; then
-            echo -ne "${BOLD}${_host}${RESET}"
-            return
+    for i in "$SSH_CLIENT" "$SSH_TTY" "$SSH_CONNECTION" ; do
+        if [[  -n "$i" ]]; then
+            host="$(__c "$color")$(__bg "${colorBG}")${styleSSH}\h"
+            break
         fi
-    fi
+    done
 
-    # Local host (only if enabled and not SSH-only)
-    if [[ "$HOST_ENABLE" == "true" && "$HOST_SSH_ONLY" == "false" ]]; then
-        _host="$(__c "$HOST_COLOR")@\h${RESET} ~"
-    fi
+    # Local host only if HOST_SSH_ONLY is false
+    [[ "$sshOnly" == "false" ]] && host="$(__c "$color")$(__bg "${colorBG}")${style}\h"
 
-    echo -ne "${BOLD}${_host}${RESET}"
+    echo -ne "${BOLD}${host}${RESET} ~"
+
 }
 
 # Current working dir

@@ -70,6 +70,14 @@ function __host () {
 # Current working dir
 function __dir () {
 
+    local color="${DIR_COLOR:-4}"
+    local truncate="${DIR_TRUNCATE:-3}"
+    local truncateSymbol="${DIR_TRUNCATE_SYMBOL:-…/}"
+    local home="${DIR_HOME_SYMBOL:-🏠}"
+    local readonlyColor="${DIR_READONLY_COLOR:-1}"
+    local readonlySymbol="${DIR_READONLY_SYMBOL:-🔒}"
+
+
     local dir="$PWD"
     dir="${dir/#$HOME}"
 
@@ -78,30 +86,28 @@ function __dir () {
     read -ra parts <<< "$dir"
 
     # Disable DIR_TRUNCATE_SYMBOL if directory is root or home
-    [[ ! -w "$PWD" || "$dir" == "$HOME" ]] && DIR_TRUNCATE_SYMBOL=""
+    [[ ! -w "$PWD" || "$dir" == "$HOME" ]] && truncateSymbol=""
 
     # Disable DIR_TRUNCATE if in read-only dir
-    [[ ! -w "$PWD" ]] && DIR_TRUNCATE=0
+    [[ ! -w "$PWD" ]] && truncate=0
 
     # Replace home with symbol
-    [[ "$dir" == "$HOME"* ]] && parts[0]="$DIR_HOME_SYMBOL"
+    [[ "$dir" == "$HOME"* ]] && parts[0]="$home"
     [[ "$dir" == "/" ]] && parts[0]="/"
 
     # Apply truncation
-    if (( ${#parts[@]} > DIR_TRUNCATE )); then
-        parts=("${parts[@]: -$DIR_TRUNCATE}")
-        dir="${DIR_TRUNCATE_SYMBOL}${parts[*]// /\/}"
+    if (( ${#parts[@]} > truncate )); then
+        parts=("${parts[@]: -$truncate}")
+        dir="${truncateSymbol}${parts[*]// /\/}"
     fi
 
     # Color based on write permissions
-    [[ ! -w "$PWD" ]] && dir="$(__c "$DIR_READONLY_COLOR")${dir}${RESET}"
-    [[ -w "$PWD" ]] && dir="$(__c "$DIR_COLOR")${dir}${RESET}"
+    [[ -w "$PWD" ]] && dir="$(__c "$color")${dir}"
 
     # Read-only indicator
-    [[ ! -w "$PWD" ]] &&
-    dir+=" $(__c "$DIR_READONLY_COLOR")${DIR_READONLY_SYMBOL}${RESET}"
+    [[ ! -w "$PWD" ]] && dir+=" $(__c "$readonlyColor")${readonlySymbol}"
 
-    echo -ne " $dir"
+    echo -ne " ${BOLD}$dir${RESET}"
 }
 
 function __git-branch () {

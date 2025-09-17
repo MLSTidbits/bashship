@@ -54,7 +54,7 @@ function __host () {
 
     # Detect SSH session
     for i in "$SSH_CLIENT" "$SSH_TTY" "$SSH_CONNECTION" ; do
-        if [[  -n "$i" ]]; then
+        if [[  -n "$status" ]]; then
             host="$(__c "$color")$(__bg "${colorBG}")${styleSSH}\h"
             break
         fi
@@ -112,67 +112,79 @@ function __dir () {
 
 function __git-branch () {
 
+    local color="${GIT_COLOR:-5}"
+    local gitSymbol="${GIT_SYMBOL:-}"
+    local open="${GIT_OPEN:-[}"
+
     command -v git >/dev/null 2>&1 || return
 
     # shellcheck disable=SC2155
     local branch="$(git symbolic-ref --short HEAD 2>/dev/null)"
 
-    [[ -z "$GIT_SYMBOL" ]] && gitSymbol="" || gitSymbol="$GIT_SYMBOL"
+    git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return
 
-    [[ "$GIT_ENABLE" == "false" ]] && return
+    [[ -n "$gitSymbol" ]] && gitSymbol=" $gitSymbol"
 
-    if [[ -n "$branch" ]]; then
-        echo -ne " $(__c "$GIT_COLOR")${GIT_OPEN}${RESET} $branch$gitSymbol"
-    else
-        echo -ne ""
-    fi
+    [[ -n "$branch" ]] &&
+    echo -ne " $(__c "$color")${open}${RESET} $branch$gitSymbol"
 
 }
 
 # Git status with Starship-style symbols, colored, no brackets, using && logic
 function __git-status () {
 
-    local symbols="" _status ahead behind
+    local color="${GIT_COLOR:-5}"
+    local gitClose="${GIT_CLOSE:-]}"
 
-    [[ "$GIT_STATUS_ENABLE" == "false" ]] && return
+    local conflict="${GIT_CONFLICT:-✖}"
+    local untracked="${GIT_UNTRACKED:-?}"
+    local staged="${GIT_STAGED:-+}"
+    local modified="${GIT_MODIFIED:-~}"
+    local deleted="${GIT_DELETED:-\-}"
+    local ahead="${GIT_AHEAD:-⇡}"
+    local behind="${GIT_BEHIND:-⇣}"
+    local clean="${GIT_CLEAN:-✔}"
+
+    local symbols=""
+
+    # shellcheck disable=SC2155
+    local status=$(__cache-get git_status)
 
     command -v git >/dev/null 2>&1 || return
 
     git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return
 
-    _status=$(__cache-get git_status)
     if [[ -z "$status" ]]; then
         # Cache miss → recompute
-        _status="$(git status --porcelain -b 2>/dev/null)"
-        __cache-set git_status 5 "$_status"
+        status="$(git status --porcelain -b 2>/dev/null)"
+        __cache-set git_status 5 "$status"
     fi
 
-    # Append symbols if conditions are met
-    echo "$_status" | grep -q '^UU' && symbols+=" $(__c 9)$GIT_CONFLICT$RESET"
-    echo "$_status" | grep -q '^??' && symbols+=" $(__c 14)$GIT_UNTRACKED$RESET"
-    echo "$_status" | grep -q '^M\ ' && symbols+=" $(__c 11)$GIT_STAGED$RESET"
-    echo "$_status" | grep -q '^\ M' && symbols+=" $(__c 2)$GIT_MODIFIED$RESET"
-    echo "$_status" | grep -q '^\ D' && symbols+=" $(__c 1)$GIT_DELETED$RESET"
+    echo "$status" | grep -q '^UU' && symbols+=" $(__c 9)$conflict$RESET"
+    echo "$status" | grep -q '^??' && symbols+=" $(__c 14)$untracked$RESET"
+    echo "$status" | grep -q '^M\ ' && symbols+=" $(__c 11)$staged$RESET"
+    echo "$status" | grep -q '^\ M' && symbols+=" $(__c 2)$modified$RESET"
+    echo "$status" | grep -q '^\ D' && symbols+=" $(__c 1)$deleted$RESET"
 
     # Clean working directory
-    [[ -z "$_status" ]] && symbols+="$GIT_CLEAN"
+    [[ -z "$status" ]] && symbols+="$(__c 2)$clean$RESET"
 
     # Ahead of remote
     # shellcheck disable=SC1083
-    ahead=$(git rev-list --count \
+    a=$(git rev-list --count \
     --left-right @{upstream}...HEAD 2>/dev/null | awk '{print $2}')
+    [[ $a -gt 0 ]] && symbols+=" $(__c 5)$ahead$RESET"
 
     # Behind remote
     # shellcheck disable=SC1083
-    behind=$(git rev-list --count \
+    b=$(git rev-list --count \
     --left-right @{upstream}...HEAD 2>/dev/null | awk '{print $1}')
+    [[ $b -gt 0 ]] && symbols+=" $(__c 1)$behind$RESET"
 
-    # shellcheck disable=SC2153
-    [[ $ahead -gt 0 ]] && symbols+=" $(__c 5)$GIT_AHEAD$RESET"
-    [[ $behind -gt 0 ]] && symbols+=" $(__c 1)$GIT_BEHIND$RESET"
+    [[ -z "$symbols" ]] && return
 
     # Output
-    echo -ne " $symbols $(__c "$GIT_COLOR")${GIT_CLOSE}${RESET}"
+    echo -ne " $symbols $(__c "$color")${gitClose}${RESET}"
 
 }
 

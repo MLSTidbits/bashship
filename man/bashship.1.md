@@ -1,11 +1,12 @@
 ---
-title: bashship.conf
+title: bashship
 section: 1
-header: Bashship Configuration File
+header: Bashship Manual
 footer: Bashship
 date: 2025-09-14
 author:
-  - Bashship Contributors
+  - MLS Tidbits <contact@mlstidbits.com>
+  - Michael Schaecher <michaelschaecher@msltidbits.com>
 ---
 
 # NAME
@@ -38,13 +39,13 @@ The order in which the prompt components are displayed can be customized using t
 
 ### PROMPT SYMBOL
 
-The `PROMPT_SYMBOL` variable defines the symbol used at the end of the prompt. You can customize its appearance using the `SYMBOL_COLOR` and `SYMBOL_COLOR_ERROR` variables.
+The `CHARACTER` variable sets the symbol used at the end of the prompt. You can also customize its color using the `CHARACTER_COLOR` variable. If the last command failed (non-zero exit status), the prompt symbol will change to the value of `CHARACTER_ROOT` and its color will change to `CHARACTER_COLOR_ERROR`.
 
-| Variable               | Description                                          | Common Values               |
-|------------------------|------------------------------------------------------|-----------------------------|
-| `PROMPT_SYMBOL`        | The symbol used at the end of the prompt             | `>`, `$`, `#`               |
-| `SYMBOL_COLOR`         | Color of the user component                          | 256 bit ASCII color codes   |
-| `SYMBOL_COLOR_ERROR`   | Color of the user component when last command failed |  |
+| Variable                | Description                                          | Common Values             |
+|-------------------------|------------------------------------------------------|---------------------------|
+| `CHARACTER`             | The symbol used at the end of the prompt             | `>`, `$`, `#`             |
+| `CHARACTER_COLOR`       | Color of the user component                          | 256 bit ASCII color codes |
+| `CHARACTER_COLOR_ERROR` | Color of the user component when last command failed |  |
 
 ### CONTAINER
 

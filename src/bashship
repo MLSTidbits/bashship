@@ -43,7 +43,7 @@ function __host () {
 
     # Detect SSH session
     for i in "$SSH_CLIENT" "$SSH_TTY" "$SSH_CONNECTION" ; do
-        if [[  -n "$status" ]]; then
+        if [[  -n "$i" ]]; then
             host="$(__c "$color")$(__bg "${colorBG}")${styleSSH}\h"
             break
         fi

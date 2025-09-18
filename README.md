@@ -49,11 +49,8 @@ sudo apt update
 sudo apt install bashship -y
 ```
 
-Once installed, you can enable Bashship by adding the following to the bottom of your `~/.bashrc` file:
-
-```bash
-source /usr/bin/bashship ; PROMPT_COMMAND='bash_prompt'
-```
+Once installed, you can enable Bashship by adding the following to the bottom of your `~/.bashrc` file: `source /usr/bin/bashship
+`.
 
 Then, restart your terminal or run `source ~/.bashrc` to apply the changes. You should now see the Bashship prompt in your terminal.
 

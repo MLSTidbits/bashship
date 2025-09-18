@@ -24,10 +24,10 @@ function __user () {
 
     local user
 
-    [[ "$EUID" -eq "0" ]] && user="${_bold}$(__c "$rootColor")$(__bg "$rootColorBG")\u"
-    [[ "$EUID" -gt "0" ]] && user="${_bold}$(__c "$color")$(__bg "$colorBG")\u"
+    [[ "$EUID" -eq "0" ]] && user="${bold}$(__c "$rootColor")$(__bg "$rootColorBG")\u"
+    [[ "$EUID" -gt "0" ]] && user="${bold}$(__c "$color")$(__bg "$colorBG")\u"
 
-    echo -ne "${_bold}${user}${_reset}"
+    echo -ne "${bold}${user}${reset}"
 
 }
 
@@ -52,7 +52,7 @@ function __host () {
     # Local host only if HOST_SSH_ONLY is false
     [[ "$sshOnly" == "false" ]] && host="$(__c "$color")$(__bg "${colorBG}")${style}\h"
 
-    echo -ne "${_bold}${host}${_reset} ~"
+    echo -ne "${bold}${host}${reset} ~"
 
 }
 
@@ -96,7 +96,7 @@ function __dir () {
     # Read-only indicator
     [[ ! -w "$PWD" ]] && dir+=" $(__c "$readonlyColor")${readonlySymbol}"
 
-    echo -ne " ${_bold}$dir${_reset}"
+    echo -ne " ${bold}$dir${reset}"
 }
 
 function __git-branch () {
@@ -115,7 +115,7 @@ function __git-branch () {
     [[ -n "$gitSymbol" ]] && gitSymbol=" $gitSymbol"
 
     [[ -n "$branch" ]] &&
-    echo -ne " $(__c "$color")${open}${_reset} $branch$gitSymbol"
+    echo -ne " $(__c "$color")${open}${reset} $branch$gitSymbol"
 
 }
 
@@ -149,29 +149,29 @@ function __git-status () {
         __cache-set git_status 5 "$status"
     fi
 
-    echo "$status" | grep -q '^UU' && symbols+=" $(__c 9)$conflict$_reset"
-    echo "$status" | grep -q '^??' && symbols+=" $(__c 14)$untracked$_reset"
-    echo "$status" | grep -q '^M\ ' && symbols+=" $(__c 11)$staged$_reset"
-    echo "$status" | grep -q '^\ M' && symbols+=" $(__c 2)$modified$_reset"
-    echo "$status" | grep -q '^\ D' && symbols+=" $(__c 1)$deleted$_reset"
+    echo "$status" | grep -q '^UU' && symbols+=" $(__c 9)$conflict$reset"
+    echo "$status" | grep -q '^??' && symbols+=" $(__c 14)$untracked$reset"
+    echo "$status" | grep -q '^M\ ' && symbols+=" $(__c 11)$staged$reset"
+    echo "$status" | grep -q '^\ M' && symbols+=" $(__c 2)$modified$reset"
+    echo "$status" | grep -q '^\ D' && symbols+=" $(__c 1)$deleted$reset"
 
     # Clean working directory
-    [[ -z "$status" ]] && symbols+="$(__c 2)$clean$_reset"
+    [[ -z "$status" ]] && symbols+="$(__c 2)$clean$reset"
 
     # Ahead of remote
     # shellcheck disable=SC1083
     a=$(git rev-list --count \
     --left-right @{upstream}...HEAD 2>/dev/null | awk '{print $2}')
-    [[ $a -gt 0 ]] && symbols+=" $(__c 5)$ahead$_reset"
+    [[ $a -gt 0 ]] && symbols+=" $(__c 5)$ahead$reset"
 
     # Behind remote
     # shellcheck disable=SC1083
     b=$(git rev-list --count \
     --left-right @{upstream}...HEAD 2>/dev/null | awk '{print $1}')
-    [[ $b -gt 0 ]] && symbols+=" $(__c 1)$behind$_reset"
+    [[ $b -gt 0 ]] && symbols+=" $(__c 1)$behind$reset"
 
     # Output
-    echo -ne " $symbols $(__c "$color")${gitClose}${_reset}"
+    echo -ne " $symbols $(__c "$color")${gitClose}${reset}"
 
 }
 
@@ -185,7 +185,7 @@ function __time () {
 
     [[ "$type" == "true" ]] && format="+%I:%M %p"
 
-    echo -ne " $(__c "$color")$(date "$format")${_reset}"
+    echo -ne " $(__c "$color")$(date "$format")${reset}"
 }
 
 # Background jobs
@@ -196,7 +196,7 @@ function __jobs () {
 
     # shellcheck disable=SC2155
     local count=$(jobs -p | wc -l)
-    [[ $count -gt 0 ]] && echo -ne " $(__c "$color")$symbol - $count${_reset}"
+    [[ $count -gt 0 ]] && echo -ne " $(__c "$color")$symbol - $count${reset}"
 }
 
 function __container () {
@@ -205,13 +205,13 @@ function __container () {
     local symbol="${CONTAINER_SYMBOL:-🛢}"
 
     while read -r line; do
-        [[ "$line" == *"lxc"* ]] && container=" $(c__c "$color")$symbol$_reset: LXC"
-        [[ "$line" == *"kubepod"* ]] && container=" $(c__c "$color")$symbol$_reset: K8S"
-        [[ "$line" == *"docker"* ]] && container=" $(c__c "$color")$symbol$_reset: Docker"
-        [[ "$line" == *"podman"* ]] && container=" $(c__c "$color")$symbol$_reset: Podman"
+        [[ "$line" == *"lxc"* ]] && container=" $(c__c "$color")$symbol$reset: LXC"
+        [[ "$line" == *"kubepod"* ]] && container=" $(c__c "$color")$symbol$reset: K8S"
+        [[ "$line" == *"docker"* ]] && container=" $(c__c "$color")$symbol$reset: Docker"
+        [[ "$line" == *"podman"* ]] && container=" $(c__c "$color")$symbol$reset: Podman"
     done < /proc/1/environ
 
-    [[ -n "$container" ]] && echo -ne "$_bold$container"
+    [[ -n "$container" ]] && echo -ne "$bold$container"
 
 }
 
@@ -227,20 +227,20 @@ character="${CHARACTER:-➜}"
 characterColor="${CHARACTER_COLOR:-2}"
 characterColorError="${CHARACTER_COLOR_ERROR:-1}"
 
-_app="bashship"
-_ver="$(cat /usr/share/doc/bashship/version 2>/dev/null ||
+app="bashship"
+ver="$(cat /usr/share/doc/bashship/version 2>/dev/null ||
 echo 'unknown version')"
 
-_reset="\[$(tput sgr0)\]"
-_bold="\[$(tput bold)\]"
+reset="\[$(tput sgr0)\]"
+bold="\[$(tput bold)\]"
 
 # Modular prompt builder
 function bash_prompt() {
 
     # shellcheck disable=SC2153
     [[ "$?" -gt "0" ]] &&
-    symbol="$(__c "$characterColorError")$character${_reset}" ||
-    symbol="$(__c "$characterColor")$character${_reset}"
+    symbol="$(__c "$characterColorError")$character${reset}" ||
+    symbol="$(__c "$characterColor")$character${reset}"
 
     local ps=""
 

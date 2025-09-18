@@ -13,6 +13,8 @@ function __cache-set () { __CACHE[$1]="$2"; }
 
 # User + Host block
 
+declare -A __CACHE=()
+
 function __user () {
 
     local color="${USER_COLOR:-2}"
@@ -217,6 +219,14 @@ function __container () {
 [[ -f "$HOME/.config/bashship.conf" ]] &&
 source "$HOME/.config/bashship.conf" 2> /dev/null
 
+promptOrder=("${PROMPT_ORDER[@]:-user host path git-branch git-status time jobs container}")
+
+newline="${NEWLINE:-false}"
+nextline="${NEXTLINE:-true}"
+character="${CHARACTER:-➜}"
+characterColor="${CHARACTER_COLOR:-2}"
+characterColorError="${CHARACTER_COLOR_ERROR:-1}"
+
 _app="bashship"
 _ver="$(cat /usr/share/doc/bashship/version 2>/dev/null ||
 echo 'unknown version')"
@@ -229,14 +239,12 @@ function bash_prompt() {
 
     # shellcheck disable=SC2153
     [[ "$?" -gt "0" ]] &&
-    symbol="$(__c "$SYMBOL_COLOR_ERROR")$SYMBOL${_reset}" ||
-    symbol="$(__c "$SYMBOL_COLOR")$SYMBOL${_reset}"
-
-    declare -A __CACHE=()
+    symbol="$(__c "$characterColorError")$character${_reset}" ||
+    symbol="$(__c "$characterColor")$character${_reset}"
 
     local ps=""
 
-    for mod in "${PROMPT_ORDER[@]}"; do case $mod in
+    for mod in "${promptOrder[@]}"; do case $mod in
         user                ) ps+="$(__user)"       ;;
         host                ) ps+="$(__host)"       ;;
         path                ) ps+="$(__dir)"        ;;
@@ -247,10 +255,10 @@ function bash_prompt() {
         container           ) ps+="$(__container)"  ;;
     esac done
 
-    [[ "$NEXTLINE" == "true" ]] && ps+="\n${symbol}"
-    [[ "$NEXTLINE" == "false" ]] && ps+=" ${symbol}"
+    [[ "$nextline" == "true" ]] && ps+="\n${symbol}"
+    [[ "$nextline" == "false" ]] && ps+=" ${symbol}"
 
-    [[ "$NEWLINE" == "true" ]] && ps="\n$ps"
+    [[ "$newline" == "true" ]] && ps="\n$ps"
 
     PS1="$ps "
 }

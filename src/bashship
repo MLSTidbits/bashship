@@ -2,19 +2,6 @@
 
 # bashship - A modular bash prompt system inspired by Starship and Powerlevel10k
 
-# Load user config if exists
-[[ -f "$HOME/.config/bashship.conf" ]] &&
-source "$HOME/.config/bashship.conf" 2> /dev/null
-
-[[ ! -f "$HOME/.config/bashship.conf" ]] &&
-source /usr/share/bashship/bashship.conf 2> /dev/null
-
-_name="bashship"
-_version="$(cat /usr/share/doc/bashship/version 2>/dev/null || echo 'unknown version')"
-
-RESET="\[$(tput sgr0)\]"
-BOLD="\[$(tput bold)\]"
-
 # Helpers
 function __c () { [[ -z "$1" ]] && set -- 7; echo "\[$(tput setaf "$1")\]"; }
 
@@ -35,10 +22,10 @@ function __user () {
 
     local user
 
-    [[ "$EUID" -eq "0" ]] && user="${BOLD}$(__c "$rootColor")$(__bg "$rootColorBG")\u"
-    [[ "$EUID" -gt "0" ]] && user="${BOLD}$(__c "$color")$(__bg "$colorBG")\u"
+    [[ "$EUID" -eq "0" ]] && user="${_bold}$(__c "$rootColor")$(__bg "$rootColorBG")\u"
+    [[ "$EUID" -gt "0" ]] && user="${_bold}$(__c "$color")$(__bg "$colorBG")\u"
 
-    echo -ne "${BOLD}${user}${RESET}"
+    echo -ne "${_bold}${user}${_reset}"
 
 }
 
@@ -63,7 +50,7 @@ function __host () {
     # Local host only if HOST_SSH_ONLY is false
     [[ "$sshOnly" == "false" ]] && host="$(__c "$color")$(__bg "${colorBG}")${style}\h"
 
-    echo -ne "${BOLD}${host}${RESET} ~"
+    echo -ne "${_bold}${host}${_reset} ~"
 
 }
 
@@ -107,7 +94,7 @@ function __dir () {
     # Read-only indicator
     [[ ! -w "$PWD" ]] && dir+=" $(__c "$readonlyColor")${readonlySymbol}"
 
-    echo -ne " ${BOLD}$dir${RESET}"
+    echo -ne " ${_bold}$dir${_reset}"
 }
 
 function __git-branch () {
@@ -126,7 +113,7 @@ function __git-branch () {
     [[ -n "$gitSymbol" ]] && gitSymbol=" $gitSymbol"
 
     [[ -n "$branch" ]] &&
-    echo -ne " $(__c "$color")${open}${RESET} $branch$gitSymbol"
+    echo -ne " $(__c "$color")${open}${_reset} $branch$gitSymbol"
 
 }
 
@@ -160,72 +147,92 @@ function __git-status () {
         __cache-set git_status 5 "$status"
     fi
 
-    echo "$status" | grep -q '^UU' && symbols+=" $(__c 9)$conflict$RESET"
-    echo "$status" | grep -q '^??' && symbols+=" $(__c 14)$untracked$RESET"
-    echo "$status" | grep -q '^M\ ' && symbols+=" $(__c 11)$staged$RESET"
-    echo "$status" | grep -q '^\ M' && symbols+=" $(__c 2)$modified$RESET"
-    echo "$status" | grep -q '^\ D' && symbols+=" $(__c 1)$deleted$RESET"
+    echo "$status" | grep -q '^UU' && symbols+=" $(__c 9)$conflict$_reset"
+    echo "$status" | grep -q '^??' && symbols+=" $(__c 14)$untracked$_reset"
+    echo "$status" | grep -q '^M\ ' && symbols+=" $(__c 11)$staged$_reset"
+    echo "$status" | grep -q '^\ M' && symbols+=" $(__c 2)$modified$_reset"
+    echo "$status" | grep -q '^\ D' && symbols+=" $(__c 1)$deleted$_reset"
 
     # Clean working directory
-    [[ -z "$status" ]] && symbols+="$(__c 2)$clean$RESET"
+    [[ -z "$status" ]] && symbols+="$(__c 2)$clean$_reset"
 
     # Ahead of remote
     # shellcheck disable=SC1083
     a=$(git rev-list --count \
     --left-right @{upstream}...HEAD 2>/dev/null | awk '{print $2}')
-    [[ $a -gt 0 ]] && symbols+=" $(__c 5)$ahead$RESET"
+    [[ $a -gt 0 ]] && symbols+=" $(__c 5)$ahead$_reset"
 
     # Behind remote
     # shellcheck disable=SC1083
     b=$(git rev-list --count \
     --left-right @{upstream}...HEAD 2>/dev/null | awk '{print $1}')
-    [[ $b -gt 0 ]] && symbols+=" $(__c 1)$behind$RESET"
-
-    [[ -z "$symbols" ]] && return
+    [[ $b -gt 0 ]] && symbols+=" $(__c 1)$behind$_reset"
 
     # Output
-    echo -ne " $symbols $(__c "$color")${gitClose}${RESET}"
+    echo -ne " $symbols $(__c "$color")${gitClose}${_reset}"
 
 }
 
 # Time
 function __time () {
 
-    local _timeFormat="+%H:%M"   # default 24h
+    local color="${TIME_COLOR:-7}"
+    local type="${TIME_12H:-false}"
 
-    [[ "$TIME_ENABLE" == "false" ]] && return
-    [[ "$TIME_12H" == "true" ]] && _timeFormat="+%I:%M %p"
+    local format="+%H:%M"   # default 24h
 
-    echo -ne " $(__c "$TIME_COLOR")$(date "$_timeFormat")${RESET}"
+    [[ "$type" == "true" ]] && format="+%I:%M %p"
+
+    echo -ne " $(__c "$color")$(date "$format")${_reset}"
 }
 
 # Background jobs
 function __jobs () {
 
+    local color="${JOBS_COLOR:-3}"
+    local symbol="${JOBS_SYMBOL:-⚙}"
+
     # shellcheck disable=SC2155
     local count=$(jobs -p | wc -l)
-    [[ $count -gt 0 ]] && echo -ne " J: $JOBS_COLOR$count$RESET"
+    [[ $count -gt 0 ]] && echo -ne " $(__c "$color")$symbol - $count${_reset}"
 }
 
 function __container () {
 
-    grep -qa 'lxc' /proc/1/evniron && echo -ne " ${CONTAINER_COLOR}lxc$RESET"
+    local color="${CONTAINER_COLOR:-6}"
+    local symbol="${CONTAINER_SYMBOL:-🛢}"
 
-    [[ -f /.dockerenv ]] || grep -qa 'docker' /proc/1/evniron &&
-    echo -ne " ${CONTAINER_COLOR}docker$RESET"
+    while read -r line; do
+        [[ "$line" == *"lxc"* ]] && container=" $(c__c "$color")$symbol$_reset: LXC"
+        [[ "$line" == *"kubepod"* ]] && container=" $(c__c "$color")$symbol$_reset: K8S"
+        [[ "$line" == *"docker"* ]] && container=" $(c__c "$color")$symbol$_reset: Docker"
+        [[ "$line" == *"podman"* ]] && container=" $(c__c "$color")$symbol$_reset: Podman"
+    done < /proc/1/environ
 
-    [[ -f /run/systemd/container ]] && grep -q 'nspawn' /run/systemd/container &&
-    echo -ne " ${CONTAINER_COLOR}nspawn$RESET"
+    [[ -n "$container" ]] && echo -ne "$_bold$container"
 
 }
+
+# Load user config if exists
+[[ -f "$HOME/.config/bashship.conf" ]] &&
+source "$HOME/.config/bashship.conf" 2> /dev/null
+
+_app="bashship"
+_ver="$(cat /usr/share/doc/bashship/version 2>/dev/null ||
+echo 'unknown version')"
+
+_reset="\[$(tput sgr0)\]"
+_bold="\[$(tput bold)\]"
 
 # Modular prompt builder
 function bash_prompt() {
 
     # shellcheck disable=SC2153
     [[ "$?" -gt "0" ]] &&
-    symbol="$(__c "$SYMBOL_COLOR_ERROR")$SYMBOL${RESET}" ||
-    symbol="$(__c "$SYMBOL_COLOR")$SYMBOL${RESET}"
+    symbol="$(__c "$SYMBOL_COLOR_ERROR")$SYMBOL${_reset}" ||
+    symbol="$(__c "$SYMBOL_COLOR")$SYMBOL${_reset}"
+
+    declare -A __CACHE=()
 
     local ps=""
 
@@ -247,3 +254,5 @@ function bash_prompt() {
 
     PS1="$ps "
 }
+
+PROMPT_COMMAND="bash_prompt;$PROMPT_COMMAND"

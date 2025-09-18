@@ -234,6 +234,8 @@ echo 'unknown version')"
 reset="\[$(tput sgr0)\]"
 bold="\[$(tput bold)\]"
 
+case "$1" in --version|-v ) echo "$app $ver" ; exit 0 ;; esac
+
 # Modular prompt builder
 function bash_prompt() {
 

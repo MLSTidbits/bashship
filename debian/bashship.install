@@ -1,2 +1,2 @@
 src/bashship usr/bin/
-src/bashship.conf usr/share/bashship/
+src/example.conf usr/share/bashship/

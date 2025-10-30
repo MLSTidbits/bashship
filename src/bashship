@@ -237,7 +237,7 @@ bold="\[$(tput bold)\]"
 case "$1" in --version|-v ) echo "$app $ver" ; exit 0 ;; esac
 
 # Modular prompt builder
-function bash_prompt() {
+function __bash-prompt () {
 
     # shellcheck disable=SC2153
     [[ "$?" -gt "0" ]] &&
@@ -265,4 +265,4 @@ function bash_prompt() {
     PS1="$ps "
 }
 
-PROMPT_COMMAND="bash_prompt;$PROMPT_COMMAND"
+PROMPT_COMMAND="__bash-prompt;$PROMPT_COMMAND"

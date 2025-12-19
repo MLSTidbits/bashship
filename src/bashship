@@ -204,12 +204,12 @@ function __container () {
     local color="${CONTAINER_COLOR:-6}"
     local symbol="${CONTAINER_SYMBOL:-🛢}"
 
-    while read -r line; do
-        [[ "$line" == *"lxc"* ]] && container=" $(c__c "$color")$symbol$reset: LXC"
-        [[ "$line" == *"kubepod"* ]] && container=" $(c__c "$color")$symbol$reset: K8S"
-        [[ "$line" == *"docker"* ]] && container=" $(c__c "$color")$symbol$reset: Docker"
-        [[ "$line" == *"podman"* ]] && container=" $(c__c "$color")$symbol$reset: Podman"
-    done < /proc/1/environ
+    local container=""
+
+    grep -aq 'lxc' /proc/1/environ && container=" $(c__c "$color")$symbol$reset: LXC"
+    grep -aq 'kubepod' /proc/1/environ && container=" $(c__c "$color")$symbol$reset: K8S"
+    grep -aq 'docker' /proc/1/environ && container=" $(c__c "$color")$symbol$reset: Docker"
+    grep -aq 'podman' /proc/1/environ && container=" $(c__c "$color")$symbol$reset: Podman"
 
     [[ -n "$container" ]] && echo -ne "$bold$container"
 

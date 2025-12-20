@@ -206,10 +206,10 @@ function __container () {
 
     local container=""
 
-    grep -aq 'lxc' /proc/1/environ && container=" $(c__c "$color")$symbol$reset: LXC"
-    grep -aq 'kubepod' /proc/1/environ && container=" $(c__c "$color")$symbol$reset: K8S"
-    grep -aq 'docker' /proc/1/environ && container=" $(c__c "$color")$symbol$reset: Docker"
-    grep -aq 'podman' /proc/1/environ && container=" $(c__c "$color")$symbol$reset: Podman"
+    grep -aq 'lxc' /proc/1/environ && container=" $(__c "$color")$symbol$reset: LXC"
+    grep -aq 'kubepod' /proc/1/environ && container=" $(__c "$color")$symbol$reset: K8S"
+    grep -aq 'docker' /proc/1/environ && container=" $(__c "$color")$symbol$reset: Docker"
+    grep -aq 'podman' /proc/1/environ && container=" $(__c "$color")$symbol$reset: Podman"
 
     [[ -n "$container" ]] && echo -ne "$bold$container"
 

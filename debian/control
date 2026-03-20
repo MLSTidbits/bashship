@@ -14,7 +14,7 @@ Package: bashship
 Architecture: any
 Depends: bash (>= 4.8), bash-completion
 Conflicts: bashship ( <= 0.4.4)
-Suggests: git, curl, bashship-docs
+Suggests: git, curl, bashship-docs, bashship-man
 Description: A minimal, fast, and highly customizable bash prompt
  Bashship is a minimal, fast, and highly customizable bash prompt that provides
  essential information without overwhelming the user. It is designed to be

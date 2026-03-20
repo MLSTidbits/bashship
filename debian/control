@@ -36,3 +36,10 @@ Depends: bashship
 Description: Documentation for Bashship
  This package contains the documentation for Bashship, including the manual
  page, version information, copyright, and other relevant files.
+
+Package: bashship-man
+Architecture: all
+Depends: bashship
+Description: Manual page for Bashship
+ This package contains the manual page for Bashship, providing users with
+ detailed information on how to use and customize the prompt effectively.

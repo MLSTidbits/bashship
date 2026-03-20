@@ -1,6 +1,6 @@
 .PHONY: all clean install _pandoc _out
 
-APPLICATION = bashship
+APPLICATION = $(shell pwd | xargs basename)
 VERSION = $(shell cat doc/version)
 
 BUILD_DIR = _build
@@ -11,32 +11,47 @@ MAN_DIR = man
 all: _pandoc _out
 
 _pandoc:
-	@echo "Building manual page..."
 	@mkdir -p $(BUILD_DIR)/$(MAN_DIR)
-	@if ! command -v pandoc ; then \
+	@if ! command -v pandoc > /dev/null ; then \
 		echo 'pandoc could not be found. Please install pandoc to build the manual page.'; \
 		exit 1; \
 	fi
 
-	@pandoc -s -t man -o $(BUILD_DIR)/$(MAN_DIR)/$(APPLICATION).1 $(MAN_DIR)/$(APPLICATION).1.md
+	@for manpage in $(MAN_DIR)/*.md; do \
+		output=$(BUILD_DIR)/$(MAN_DIR)/$$(basename "$${manpage%.md}"); \
+		pandoc -s -t man -o "$$output" "$$manpage"; \
+	done
 
 _out:
-	mkdir -p $(BUILD_DIR)/doc \
 
-	@cp -v $(SOURCE_DIR)/$(APPLICATION) $(BUILD_DIR)/
+	@cp -rf $(SOURCE_DIR)/* $(BUILD_DIR)/
 
-	@cp -v $(DOC_DIR)/version $(DOC_DIR)/copyright README.md CONTRIBUTING.md CODE_OF_CONDUCT.md \
+	@cp -f $(DOC_DIR)/* README.md CONTRIBUTING.md CODE_OF_CONDUCT.md \
 		$(BUILD_DIR)/$(DOC_DIR)/
 
-	@cp -v $(SOURCE_DIR)/example.conf $(BUILD_DIR)/
 clean:
-	rm -rvf $(BUILD_DIR)
+	@rm -rf $(BUILD_DIR)
 
 install:
 	@install -Dm755 $(SOURCE_DIR)/$(APPLICATION) /usr/bin/$(APPLICATION)
-	@install -Dm644 $(BUILD_DIR)/$(MAN_DIR)/$(APPLICATION).1 /usr/share/man/man1/$(APPLICATION).1
-	@gzip -9 /usr/share/man/man1/$(APPLICATION).1
 
-	@install -Dm644 $(DOC_DIR)/version $(DOC_DIR)/copyright README.md CONTRIBUTING.md CODE_OF_CONDUCT.md \
-		/usr/share/doc/$(APPLICATION)/
-	@install -Dm644 $(SOURCE_DIR)/example.conf /usr/share/doc/$(APPLICATION)/example.conf
+# Install the /etc configuration file if it doesn't exist
+	@install -Dm644 $(SOURCE_DIR)/$(APPLICATION).conf \
+		/usr/share/$(APPLICATION)/example.conf
+
+	@install -Dm755 $(SOURCE_DIR)/$(APPLICATION) /usr/bin/$(APPLICATION)
+
+	@for manpage in $(BUILD_DIR)/$(MAN_DIR)/*; do \
+		section=$$(echo "$$manpage" | sed 's/.*\.\([0-9]\+\)$$/\1/'); \
+		dest=/usr/share/man/man$$section/$$(basename $$manpage); \
+		echo "Installing $$manpage -> $$dest"; \
+		gzip -9 "$$dest"; \
+	done
+
+	@install -Dm644 $(BUILD_DIR)/$(DOC_DIR)/* /usr/share/doc/$(APPLICATION)/
+
+uninstall:
+	@rm -rf /usr/bin/$(APPLICATION) \
+		/usr/share/$(APPLICATION)/example.conf \
+		/usr/share/man/man*/*/$(APPLICATION).*.gz \
+		/usr/share/doc/$(APPLICATION)

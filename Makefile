@@ -10,26 +10,6 @@ MAN_DIR = man
 
 all: _pandoc _out
 
-_pandoc:
-	@mkdir -p $(BUILD_DIR)/$(MAN_DIR)
-	@if ! command -v pandoc > /dev/null ; then \
-		echo 'pandoc could not be found. Please install pandoc to build the manual page.'; \
-		exit 1; \
-	fi
-
-	@for manpage in $(MAN_DIR)/*.md; do \
-		output=$(BUILD_DIR)/$(MAN_DIR)/$$(basename "$${manpage%.md}"); \
-		pandoc -s -t man -o "$$output" "$$manpage"; \
-	done
-
-_out:
-
-	@cp -rf $(SOURCE_DIR)/* $(BUILD_DIR)/
-
-	@cp -rf $(DOC_DIR) $(BUILD_DIR)/
-	@cp -f README.md CONTRIBUTING.md CODE_OF_CONDUCT.md \
-		$(BUILD_DIR)/$(DOC_DIR)/
-
 clean:
 	@rm -rf $(BUILD_DIR)
 
@@ -55,3 +35,23 @@ uninstall:
 		/usr/share/$(APPLICATION)/example.conf \
 		/usr/share/man/man*/*/$(APPLICATION).*.gz \
 		/usr/share/doc/$(APPLICATION)
+
+_pandoc:
+	@mkdir -p $(BUILD_DIR)/$(MAN_DIR)
+	@if ! command -v pandoc > /dev/null ; then \
+		echo 'pandoc could not be found. Please install pandoc to build the manual page.'; \
+		exit 1; \
+	fi
+
+	@for manpage in $(MAN_DIR)/*.md; do \
+		output=$(BUILD_DIR)/$(MAN_DIR)/$$(basename "$${manpage%.md}"); \
+		pandoc -s -t man -o "$$output" "$$manpage"; \
+	done
+
+_out:
+
+	@cp -rf $(SOURCE_DIR)/* $(BUILD_DIR)/
+
+	@cp -rf $(DOC_DIR) $(BUILD_DIR)/
+	@cp -f README.md CONTRIBUTING.md CODE_OF_CONDUCT.md \
+		$(BUILD_DIR)/$(DOC_DIR)/

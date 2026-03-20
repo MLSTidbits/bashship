@@ -49,8 +49,8 @@ function __host () {
         fi
     done
 
-    # Local host only if HOST_SSH_ONLY is false
-    [[ "$sshOnly" == "false" ]] && host="$(__c "$color")$(__bg "${colorBG}")${style}\h"
+    # Local host only if HOST_SSH_ONLY is false and not already set by SSH detection
+    [[ -z "$host" && "$sshOnly" == "false" ]] && host="$(__c "$color")$(__bg "${colorBG}")${style}\h"
 
     echo -ne "${bold}${host}${reset} ~"
 
@@ -68,21 +68,25 @@ function __dir () {
 
 
     local dir="$PWD"
-    dir="${dir/#$HOME}"
+    local inHome=false
+    [[ "$PWD" == "$HOME"* ]] && inHome=true
+
+    # Strip HOME prefix for display
+    dir="${dir/#$HOME/}"
 
     # Split path into parts
     local IFS="/"
     read -ra parts <<< "$dir"
 
     # Disable DIR_TRUNCATE_SYMBOL if directory is root or home
-    [[ ! -w "$PWD" || "$dir" == "$HOME" ]] && truncateSymbol=""
+    [[ ! -w "$PWD" || "$PWD" == "$HOME" ]] && truncateSymbol=""
 
     # Disable DIR_TRUNCATE if in read-only dir
     [[ ! -w "$PWD" ]] && truncate=0
 
     # Replace home with symbol
-    [[ "$dir" == "$HOME"* ]] && parts[0]="$home"
-    [[ "$dir" == "/" ]] && parts[0]="/"
+    [[ "$inHome" == "true" ]] && parts[0]="$home"
+    [[ "$PWD" == "/" ]] && parts[0]="/"
 
     # Apply truncation
     if (( ${#parts[@]} > truncate )); then
@@ -146,7 +150,7 @@ function __git-status () {
     if [[ -z "$status" ]]; then
         # Cache miss → recompute
         status="$(git status --porcelain -b 2>/dev/null)"
-        __cache-set git_status 5 "$status"
+        __cache-set git_status "$status"
     fi
 
     echo "$status" | grep -q '^UU' && symbols+=" $(__c 9)$conflict$reset"
@@ -158,16 +162,14 @@ function __git-status () {
     # Clean working directory
     [[ -z "$status" ]] && symbols+="$(__c 2)$clean$reset"
 
-    # Ahead of remote
+    # Ahead/behind remote — single subprocess
     # shellcheck disable=SC1083
-    a=$(git rev-list --count \
-    --left-right @{upstream}...HEAD 2>/dev/null | awk '{print $2}')
+    local ab
+    ab=$(git rev-list --count --left-right @{upstream}...HEAD 2>/dev/null)
+    local a b
+    a=$(echo "$ab" | awk '{print $2}')
+    b=$(echo "$ab" | awk '{print $1}')
     [[ $a -gt 0 ]] && symbols+=" $(__c 5)$ahead$reset"
-
-    # Behind remote
-    # shellcheck disable=SC1083
-    b=$(git rev-list --count \
-    --left-right @{upstream}...HEAD 2>/dev/null | awk '{print $1}')
     [[ $b -gt 0 ]] && symbols+=" $(__c 1)$behind$reset"
 
     # Output
@@ -204,6 +206,8 @@ function __container () {
     local color="${CONTAINER_COLOR:-6}"
     local symbol="${CONTAINER_SYMBOL:-🛢}"
 
+    [[ -n "$__CONTAINER_CACHE" ]] && echo -ne "$__CONTAINER_CACHE" && return
+
     local container=""
 
     grep -aq 'lxc' /proc/1/environ && container=" $(__c "$color")$symbol$reset: LXC"
@@ -211,7 +215,8 @@ function __container () {
     grep -aq 'docker' /proc/1/environ && container=" $(__c "$color")$symbol$reset: Docker"
     grep -aq 'podman' /proc/1/environ && container=" $(__c "$color")$symbol$reset: Podman"
 
-    [[ -n "$container" ]] && echo -ne "$bold$container"
+    __CONTAINER_CACHE="${container:+$bold$container}"
+    [[ -n "$__CONTAINER_CACHE" ]] && echo -ne "$__CONTAINER_CACHE"
 
 }
 
@@ -239,7 +244,7 @@ case "$1" in --version|-v ) echo "$app $ver" ; exit 0 ;; esac
 # Modular prompt builder
 function __bash-prompt () {
 
-    [[ "$?" -gt "0" ]] &&
+    [[ "$__last_exit" -gt "0" ]] &&
     symbol="$(__c "$characterColorError")$character${reset}" ||
     symbol="$(__c "$characterColor")$character${reset}"
 
@@ -264,4 +269,5 @@ function __bash-prompt () {
     PS1="$ps "
 }
 
-PROMPT_COMMAND="__bash-prompt;$PROMPT_COMMAND"
+[[ "$PROMPT_COMMAND" != *"__bash-prompt"* ]] &&
+PROMPT_COMMAND='__last_exit=$?; __bash-prompt'"${PROMPT_COMMAND:+;$PROMPT_COMMAND}"

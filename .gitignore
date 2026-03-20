@@ -22,4 +22,4 @@ debian/bashship-man/
 
 doc/version
 
-_
+_build/

@@ -45,7 +45,6 @@ install:
 	@for manpage in $(BUILD_DIR)/$(MAN_DIR)/*; do \
 		section=$$(echo "$$manpage" | sed 's/.*\.\([0-9]\+\)$$/\1/'); \
 		dest=/usr/share/man/man$$section/$$(basename $$manpage); \
-		echo "Installing $$manpage -> $$dest"; \
 		gzip -9 "$$dest"; \
 	done
 

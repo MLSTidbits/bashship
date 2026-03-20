@@ -26,7 +26,8 @@ _out:
 
 	@cp -rf $(SOURCE_DIR)/* $(BUILD_DIR)/
 
-	@cp -f $(DOC_DIR)/* README.md CONTRIBUTING.md CODE_OF_CONDUCT.md \
+	@cp -rf $(DOC_DIR) $(BUILD_DIR)/
+	@cp -f README.md CONTRIBUTING.md CODE_OF_CONDUCT.md \
 		$(BUILD_DIR)/$(DOC_DIR)/
 
 clean:

@@ -31,3 +31,12 @@ _out:
 	@cp -v $(SOURCE_DIR)/example.conf $(BUILD_DIR)/
 clean:
 	rm -rvf $(BUILD_DIR)
+
+install:
+	@install -Dm755 $(SOURCE_DIR)/$(APPLICATION) /usr/bin/$(APPLICATION)
+	@install -Dm644 $(BUILD_DIR)/$(MAN_DIR)/$(APPLICATION).1 /usr/share/man/man1/$(APPLICATION).1
+	@gzip -9 /usr/share/man/man1/$(APPLICATION).1
+
+	@install -Dm644 $(DOC_DIR)/version $(DOC_DIR)/copyright README.md CONTRIBUTING.md CODE_OF_CONDUCT.md \
+		/usr/share/doc/$(APPLICATION)/
+	@install -Dm644 $(SOURCE_DIR)/example.conf /usr/share/doc/$(APPLICATION)/example.conf

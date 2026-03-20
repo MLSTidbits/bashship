@@ -1,4 +1,5 @@
-doc/version
-CODE_OF_CONDUCT.md
-README.md
-doc/copyright
+_build/doc/version
+_build/doc/README.md
+_build/doc/CONTRIBUTING.md
+_build/doc/CODE_OF_CONDUCT.md
+_build/doc/copyright

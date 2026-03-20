@@ -37,6 +37,7 @@ uninstall:
 		/usr/share/doc/$(APPLICATION)
 
 _pandoc:
+	@echo "Building manual pages from markdown sources..."
 	@mkdir -p $(BUILD_DIR)/$(MAN_DIR)
 	@if ! command -v pandoc > /dev/null ; then \
 		echo 'pandoc could not be found. Please install pandoc to build the manual page.'; \
@@ -46,12 +47,14 @@ _pandoc:
 	@for manpage in $(MAN_DIR)/*.md; do \
 		output=$(BUILD_DIR)/$(MAN_DIR)/$$(basename "$${manpage%.md}"); \
 		pandoc -s -t man -o "$$output" "$$manpage"; \
+		echo "Generated $$output from $$manpage"; \
 	done
 
 _out:
-
+	@echo "Copying source files to build directory..."
 	@cp -rf $(SOURCE_DIR)/* $(BUILD_DIR)/
 
+	@echo "Copying documentation files to build directory..."
 	@cp -rf $(DOC_DIR) $(BUILD_DIR)/
 	@cp -f README.md CONTRIBUTING.md CODE_OF_CONDUCT.md \
 		$(BUILD_DIR)/$(DOC_DIR)/

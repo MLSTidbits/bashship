@@ -164,8 +164,8 @@ function __git-status () {
 
     # Ahead/behind remote — single subprocess
     # shellcheck disable=SC1083
-    local ab
-    ab=$(git rev-list --count --left-right @{upstream}...HEAD 2>/dev/null)
+    # shellcheck disable=SC2155
+    local ab=$(git rev-list --count --left-right @{upstream}...HEAD 2>/dev/null)
     local a b
     a=$(echo "$ab" | awk '{print $2}')
     b=$(echo "$ab" | awk '{print $1}')
@@ -244,6 +244,7 @@ case "$1" in --version|-v ) echo "$app $ver" ; exit 0 ;; esac
 # Modular prompt builder
 function __bash-prompt () {
 
+    # shellcheck disable=SC2154
     [[ "$__last_exit" -gt "0" ]] &&
     symbol="$(__c "$characterColorError")$character${reset}" ||
     symbol="$(__c "$characterColor")$character${reset}"

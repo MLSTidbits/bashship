@@ -18,6 +18,7 @@ debian/*.debhelper
 debian/*.substvars
 debian/bashship/
 debian/bashship-docs/
+debian/bashship-man/
 
 doc/version
 

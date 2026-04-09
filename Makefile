@@ -51,6 +51,7 @@ _pandoc:
 	done
 
 _out:
+	@mkdir -p $(BUILD_DIR)
 	@echo "Copying source files to build directory..."
 	@cp -rf $(SOURCE_DIR)/* $(BUILD_DIR)/
 

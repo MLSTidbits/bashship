@@ -30,13 +30,6 @@ Description: A minimal, fast, and highly customizable bash prompt
  Whether you're a developer, system administrator, or casual user,
  Bashship enhances your terminal experience with its elegant and functional design.
 
-Package: bashship-docs
-Architecture: all
-Depends: bashship
-Description: Documentation for Bashship
- This package contains the documentation for Bashship, including the manual
- page, version information, copyright, and other relevant files.
-
 Package: bashship-man
 Architecture: all
 Depends: bashship

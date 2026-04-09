@@ -163,9 +163,8 @@ function __git-status () {
     [[ -z "$status" ]] && symbols+="$(__c 2)$clean$reset"
 
     # Ahead/behind remote — single subprocess
-    # shellcheck disable=SC1083
-    # shellcheck disable=SC2155
-    local ab=$(git rev-list --count --left-right @{upstream}...HEAD 2>/dev/null)
+    local ab
+    ab=$(git rev-list --count --left-right '@{upstream}...HEAD' 2>/dev/null)
     local a b
     a=$(echo "$ab" | awk '{print $2}')
     b=$(echo "$ab" | awk '{print $1}')
@@ -220,32 +219,10 @@ function __container () {
 
 }
 
-# Load user config if exists
-[[ -f "$HOME/.config/bashship.conf" ]] &&
-source "$HOME/.config/bashship.conf" 2> /dev/null
-
-promptOrder=("${PROMPT_ORDER[@]:-user host path git-branch git-status time jobs container}")
-
-newline="${NEWLINE:-false}"
-nextline="${NEXTLINE:-true}"
-character="${CHARACTER:-➜}"
-characterColor="${CHARACTER_COLOR:-2}"
-characterColorError="${CHARACTER_COLOR_ERROR:-1}"
-
-app="bashship"
-ver="$(cat /usr/share/doc/bashship/version 2>/dev/null ||
-echo 'unknown version')"
-
-reset="\[$(tput sgr0)\]"
-bold="\[$(tput bold)\]"
-
-case "$1" in --version|-v ) echo "$app $ver" ; exit 0 ;; esac
-
 # Modular prompt builder
 function __bash-prompt () {
 
-    # shellcheck disable=SC2154
-    [[ "$__last_exit" -gt "0" ]] &&
+    [[ "$lastExit" -gt "0" ]] &&
     symbol="$(__c "$characterColorError")$character${reset}" ||
     symbol="$(__c "$characterColor")$character${reset}"
 
@@ -270,5 +247,27 @@ function __bash-prompt () {
     PS1="$ps "
 }
 
+# Load user config if exists
+[[ -f "$HOME/.config/bashship.conf" ]] &&
+source "$HOME/.config/bashship.conf" 2> /dev/null
+
+promptOrder=("${PROMPT_ORDER[@]:-user host path git-branch git-status time jobs container}")
+
+newline="${NEWLINE:-false}"
+nextline="${NEXTLINE:-true}"
+character="${CHARACTER:-➜}"
+characterColor="${CHARACTER_COLOR:-2}"
+characterColorError="${CHARACTER_COLOR_ERROR:-1}"
+
+app="bashship"
+ver="$(cat /usr/share/doc/bashship/version 2>/dev/null ||
+echo 'unknown version')"
+
+reset="\[$(tput sgr0)\]"
+bold="\[$(tput bold)\]"
+lastExit=0
+
+case "$1" in --version|-v ) echo "$app $ver" ; exit 0 ;; esac
+
 [[ "$PROMPT_COMMAND" != *"__bash-prompt"* ]] &&
-PROMPT_COMMAND='__last_exit=$?; __bash-prompt'"${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
+PROMPT_COMMAND='lastExit=$?; __bash-prompt'"${PROMPT_COMMAND:+;$PROMPT_COMMAND}"

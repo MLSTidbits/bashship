@@ -20,6 +20,4 @@ debian/bashship/
 debian/bashship-docs/
 debian/bashship-man/
 
-doc/version
-
 _build/

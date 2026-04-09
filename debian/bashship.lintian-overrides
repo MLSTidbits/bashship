@@ -1,0 +1,4 @@
+bashship: debian-changelog-line-too-long
+bashship: description-synopsis-starts-with-article
+bashship: extended-description-line-too-long
+bashship: no-manual-page

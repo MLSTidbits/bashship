@@ -13,8 +13,8 @@ Rules-Requires-Root: no
 Package: bashship
 Architecture: any
 Depends: bash (>= 4.8), bash-completion
-Conflicts: bashship ( <= 1.1.4), bashship-docs
-Suggests: git, curl, bashship-docs, bashship-man
+Conflicts: bashship ( <= 1.1.4), bashship-docs, bashship-man
+Suggests: git, curl
 Description: A minimal, fast, and highly customizable bash prompt
  Bashship is a minimal, fast, and highly customizable bash prompt that provides
  essential information without overwhelming the user. It is designed to be
@@ -29,10 +29,3 @@ Description: A minimal, fast, and highly customizable bash prompt
  .
  Whether you're a developer, system administrator, or casual user,
  Bashship enhances your terminal experience with its elegant and functional design.
-
-Package: bashship-man
-Architecture: all
-Depends: bashship
-Description: Manual page for Bashship
- This package contains the manual page for Bashship, providing users with
- detailed information on how to use and customize the prompt effectively.

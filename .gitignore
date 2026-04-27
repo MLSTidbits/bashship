@@ -22,3 +22,5 @@ debian/bashship-man/
 debian/source/
 
 _build/
+
+CLAUDE.md

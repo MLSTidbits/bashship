@@ -4,12 +4,9 @@ Upstream-Contact: MLSTidbits <contact@mlstidbits.com>
 Source: https://github.com/MLSTidbits/bashship.git
 
 Files:
- debian/*
- usr/*
+ *
 Copyright: 2025 MLSTidbits <contact@mlstidbits.com>
            2025 Michael Schaecher <michaelschaecher@mlstidbits.com>
-License: GPL-3.0+
-
 License: GPL-3.0+
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by

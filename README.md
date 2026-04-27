@@ -1,7 +1,7 @@
 <div align="center">
- <image
+ <img
   src="images/screenshot.png"
-  alt="HealthGPT Logo"
+  alt="Bashship screenshot"
   width=auto
   height="480">
   <h1><b>BASHSHIP</b></h1>
@@ -14,13 +14,13 @@ Bashship is a minimal, fast, and highly customizable prompt for Bash. It is desi
 
 ### Why Style Prompts Natively?
 
-While on most systems a third-party prompt is not likely to cause performance issues, there are scenarios where a native Bash prompt can be beneficial. One such scenario is when working in constrained environments, such as Docker, Podman or LXC where resources are limited. In these cases, a lightweight prompt can help reduce overhead and improve performance.
+While on most systems a third-party prompt is not likely to cause performance issues, there are scenarios where a native Bash prompt can be beneficial. One such scenario is when working in constrained environments, such as Docker, Podman, or LXC where resources are limited. In these cases, a lightweight prompt can help reduce overhead and improve performance.
 
-The biggest issue with third-party prompts especially with posix shells like Bash and Zsh command history is often funky requiring some manual intervention to fix. This is especially true when the prompt is slow or buggy causing commands to be lost or duplicated. A native prompt can help avoid these issues by being more reliable and consistent.
+The biggest issue with third-party prompts, especially with POSIX shells like Bash and Zsh, is that command history is often erratic, requiring manual intervention to fix. This is especially true when the prompt is slow or buggy, causing commands to be lost or duplicated. A native prompt can help avoid these issues by being more reliable and consistent.
 
 Additionally, a native prompt can be more secure as it does not require executing external binaries which may be compromised or contain vulnerabilities.
 
-One of the main goals of Bashship is to be fast and lightweight, this is done be minimizing the number of external dependencies and limiting the amount of work done in the prompt. Even **Starship** would move slowly if doe to excessive git status checks in large repositories and loading of multiple modules.
+One of the main goals of Bashship is to be fast and lightweight, this is done by minimizing the number of external dependencies and limiting the amount of work done in the prompt. Even **Starship** would move slowly due to excessive git status checks in large repositories and loading of multiple modules.
 
 ## Features
 
@@ -33,7 +33,7 @@ One of the main goals of Bashship is to be fast and lightweight, this is done be
 
 ## Installation
 
-The recommended way to install Bashship on Debian/Ubuntu based systems through the package manager. To do so follow the instructions below, on the [archive page](https://archive.mlstidbits.com).
+The recommended way to install Bashship on Debian/Ubuntu-based systems is through the package manager. To do so, follow the instructions below on the [archive page](https://archive.mlstidbits.com).
 
 ```bash
 echo "deb [arch=amd64 signed-by=/usr/share/keyrings/MLSTidbits.gpg] https://archive.mlstidbits.com/ stable main" |
@@ -49,22 +49,19 @@ sudo apt update
 sudo apt install bashship -y
 ```
 
-Once installed, you can enable Bashship by adding the following to the bottom of your `~/.bashrc` file: `source /usr/bin/bashship
-`.
+Once installed, you can enable Bashship by adding the following to the bottom of your `~/.bashrc` file: `source /usr/bin/bashship`.
 
 Then, restart your terminal or run `source ~/.bashrc` to apply the changes. You should now see the Bashship prompt in your terminal.
 
-## CONFIGURATION
+## Configuration
 
-By default, `bashship` loads the a basic configuration if **user configuration file** is not found at `~/.config/bashship/bashship.conf`. To create a user configuration file, copy the default configuration file from the installation directory to `~/.config/bashship/`:
+By default, `bashship` loads a basic configuration if a **user configuration file** is not found at `~/.config/bashship/bashship.conf`. To create a user configuration file, copy the default configuration file from the installation directory to `~/.config/bashship/`:
 
 ```bash
 touch ~/.config/bashship/bashship.conf
 ```
 
-The configuration file is a bash script that sets various variables to customize the prompt. Below are some of the key configuration options available in `bashship.conf`:
-
-Below is an example configuration file with explanations for each option. To learn more about each option, please see `/usr/share/bashship/bashship.conf` or the http://github.com/MLSTidbits/bashship repository.
+The configuration file is a Bash script that sets variables to customize the prompt. For a full reference, see `/usr/share/bashship/bashship.conf` or the [bashship repository](https://github.com/MLSTidbits/bashship).
 
 ## Configuration Options
 
@@ -79,8 +76,8 @@ The `CHARACTER` variable sets the symbol used at the end of the prompt. You can 
 | Variable                | Description                                          | Common Values             |
 |-------------------------|------------------------------------------------------|---------------------------|
 | `CHARACTER`             | The symbol used at the end of the prompt             | `>`, `$`, `#`             |
-| `CHARACTER_COLOR`       | Color of the user component                          | 256 bit ASCII color codes |
-| `CHARACTER_COLOR_ERROR` | Color of the user component when last command failed |  |
+| `CHARACTER_COLOR`       | Color of the prompt symbol                           | 256 bit ASCII color codes |
+| `CHARACTER_COLOR_ERROR` | Color of the prompt symbol when last command failed  |  |
 
 ### CONTAINER
 
@@ -141,7 +138,6 @@ The hostname portions of the prompt can be customized such as only showing when 
 | `HOST_SYMBOL`          | Symbol used before the hostname                      | `@`, `in`, etc.             |
 | `HOST_SSH`             | Show if connected via SSH                            | `true`, `false`             |
 | `HOST_SSH_STYLE`       | Style of SSH indicator                               | `@ssh:`, `🔒`, etc.         |
-| `JOBS_COLOR`           | Color of the jobs component                          | 256 bit ASCII color codes   |
 
 ### JOBS
 

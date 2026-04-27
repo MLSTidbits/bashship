@@ -10,3 +10,6 @@ MD013: false
 # Disable warning for line length
 MD025: false
 MD034: false
+
+# Disable warning for empty table column
+MD060: false

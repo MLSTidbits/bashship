@@ -267,7 +267,24 @@ reset="\[$(tput sgr0)\]"
 bold="\[$(tput bold)\]"
 lastExit=0
 
-case "$1" in --version|-v ) echo "$app $ver" ; exit 0 ;; esac
+case "$1" in
+    edit    )
+        [[ -z "$EDITOR" ]] && nano "$HOME/.config/bashship.conf" ||
+        $EDITOR "$HOME/.config/bashship.conf"
+    ;;
+    config  )
+        if [[ -f "$HOME/.config/bashship.conf" ]]; then
+            echo "bashship: $HOME/.config/bashship.conf already exists; not overwriting." >&2
+        else
+            install -m 644 /usr/share/bashship/example.conf "$HOME/.config/bashship.conf" &&
+            echo "bashship: config installed to $HOME/.config/bashship.conf"
+        fi
+
+        read -rp "Do you wish to edit bashship.conf? [N/y]: " readEdit
+        [[ "$readEdit" == [yY] ]] && bashship edit || :
+    ;;
+    version ) echo "$app $ver" ; exit 0 ;;
+esac
 
 [[ "$PROMPT_COMMAND" != *"__bash-prompt"* ]] &&
 PROMPT_COMMAND='lastExit=$?; __bash-prompt'"${PROMPT_COMMAND:+;$PROMPT_COMMAND}"

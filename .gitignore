@@ -19,5 +19,6 @@ debian/*.substvars
 debian/bashship/
 debian/bashship-docs/
 debian/bashship-man/
+debian/source/
 
 _build/
